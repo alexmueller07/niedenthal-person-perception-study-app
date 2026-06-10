@@ -1,10 +1,9 @@
 @import "tailwindcss";
 
-/* Lock the page: no scroll/overscroll bounce (which revealed white past the
-   black background), no rubber-band dragging, no text/element drag-select. */
+/* Lock the window itself (no rubber-band drag revealing white past the black,
+   no element drag-select) while still allowing content to scroll inside #root. */
 html,
-body,
-#root {
+body {
   height: 100%;
   margin: 0;
   background: #000;
@@ -15,6 +14,14 @@ body,
   -webkit-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+/* #root holds the app and is the scroll container when a screen is taller
+   than the viewport (e.g. the scenario task). */
+#root {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 img {
