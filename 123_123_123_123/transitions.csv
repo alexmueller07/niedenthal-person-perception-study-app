@@ -1,0 +1,133 @@
+dyadId,participantId,partnerId,computer,subjectInitials,raName,sessionTime,sessionDate,sessionTimestamp,ratingTask,subTask,emotion1,emotion2,ratingPerson,response,trialNumber,softwareVersion
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:44.478Z,emotion_scenarios,new_city,happy,intensity,your partner,4,1,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:44.493Z,emotion_scenarios,new_city,happy,confidence,your partner,3,2,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:44.502Z,emotion_scenarios,new_city,excited,intensity,your partner,6,3,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:44.507Z,emotion_scenarios,new_city,excited,confidence,your partner,3,4,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:44.512Z,emotion_scenarios,new_city,anxious,intensity,your partner,5,5,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:44.516Z,emotion_scenarios,new_city,anxious,confidence,your partner,2,6,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:51.544Z,emotion_scenarios,stood_up_friend,angry,intensity,your partner,5,7,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:51.554Z,emotion_scenarios,stood_up_friend,angry,confidence,your partner,4,8,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:51.562Z,emotion_scenarios,stood_up_friend,sad,intensity,your partner,5,9,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:51.568Z,emotion_scenarios,stood_up_friend,sad,confidence,your partner,4,10,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:51.572Z,emotion_scenarios,stood_up_friend,embarrassed,intensity,your partner,5,11,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:51.577Z,emotion_scenarios,stood_up_friend,embarrassed,confidence,your partner,4,12,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:59.693Z,emotion_scenarios,friend_moving,happy,intensity,your partner,7,13,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:59.700Z,emotion_scenarios,friend_moving,happy,confidence,your partner,6,14,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:59.706Z,emotion_scenarios,friend_moving,anxious,intensity,your partner,6,15,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:59.709Z,emotion_scenarios,friend_moving,anxious,confidence,your partner,4,16,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:59.714Z,emotion_scenarios,friend_moving,sad,intensity,your partner,4,17,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:02:59.718Z,emotion_scenarios,friend_moving,sad,confidence,your partner,1,18,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:06.390Z,emotion_scenarios,bug_in_food,angry,intensity,your partner,5,19,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:06.397Z,emotion_scenarios,bug_in_food,angry,confidence,your partner,4,20,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:06.404Z,emotion_scenarios,bug_in_food,disgust,intensity,your partner,5,21,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:06.409Z,emotion_scenarios,bug_in_food,disgust,confidence,your partner,4,22,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:06.414Z,emotion_scenarios,bug_in_food,scared,intensity,your partner,6,23,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:06.417Z,emotion_scenarios,bug_in_food,scared,confidence,your partner,5,24,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:12.920Z,emotion_scenarios,goal_achieved,content,intensity,your partner,7,25,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:12.929Z,emotion_scenarios,goal_achieved,content,confidence,your partner,4,26,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:12.935Z,emotion_scenarios,goal_achieved,happy,intensity,your partner,7,27,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:12.940Z,emotion_scenarios,goal_achieved,happy,confidence,your partner,5,28,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:12.944Z,emotion_scenarios,goal_achieved,pride,intensity,your partner,7,29,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:12.948Z,emotion_scenarios,goal_achieved,pride,confidence,your partner,6,30,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:18.528Z,emotion_scenarios,credit_stolen,sad,intensity,your partner,6,31,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:18.538Z,emotion_scenarios,credit_stolen,sad,confidence,your partner,5,32,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:18.544Z,emotion_scenarios,credit_stolen,annoyed,intensity,your partner,3,33,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:18.549Z,emotion_scenarios,credit_stolen,annoyed,confidence,your partner,1,34,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:18.555Z,emotion_scenarios,credit_stolen,angry,intensity,your partner,1,35,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:18.559Z,emotion_scenarios,credit_stolen,angry,confidence,your partner,1,36,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:24.956Z,emotion_scenarios,life_going_well,pride,intensity,your partner,7,37,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:24.964Z,emotion_scenarios,life_going_well,pride,confidence,your partner,1,38,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:24.975Z,emotion_scenarios,life_going_well,happy,intensity,your partner,1,39,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:24.981Z,emotion_scenarios,life_going_well,happy,confidence,your partner,7,40,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:24.986Z,emotion_scenarios,life_going_well,content,intensity,your partner,6,41,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:24.991Z,emotion_scenarios,life_going_well,content,confidence,your partner,7,42,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:30.674Z,emotion_scenarios,speech_celebration,excited,intensity,your partner,6,43,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:30.689Z,emotion_scenarios,speech_celebration,excited,confidence,your partner,7,44,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:30.699Z,emotion_scenarios,speech_celebration,scared,intensity,your partner,6,45,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:30.704Z,emotion_scenarios,speech_celebration,scared,confidence,your partner,7,46,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:30.708Z,emotion_scenarios,speech_celebration,anxious,intensity,your partner,6,47,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:30.712Z,emotion_scenarios,speech_celebration,anxious,confidence,your partner,7,48,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:41.246Z,emotion_scenarios,bug_in_food,disgust,intensity,an average UW-Madison student,6,49,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:41.256Z,emotion_scenarios,bug_in_food,disgust,confidence,an average UW-Madison student,4,50,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:41.263Z,emotion_scenarios,bug_in_food,scared,intensity,an average UW-Madison student,6,51,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:41.267Z,emotion_scenarios,bug_in_food,scared,confidence,an average UW-Madison student,5,52,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:41.272Z,emotion_scenarios,bug_in_food,angry,intensity,an average UW-Madison student,4,53,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:41.276Z,emotion_scenarios,bug_in_food,angry,confidence,an average UW-Madison student,5,54,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:45.064Z,emotion_scenarios,friend_moving,anxious,intensity,an average UW-Madison student,5,55,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:45.077Z,emotion_scenarios,friend_moving,anxious,confidence,an average UW-Madison student,5,56,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:45.086Z,emotion_scenarios,friend_moving,happy,intensity,an average UW-Madison student,5,57,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:45.091Z,emotion_scenarios,friend_moving,happy,confidence,an average UW-Madison student,5,58,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:45.096Z,emotion_scenarios,friend_moving,sad,intensity,an average UW-Madison student,5,59,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:45.100Z,emotion_scenarios,friend_moving,sad,confidence,an average UW-Madison student,5,60,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:49.910Z,emotion_scenarios,life_going_well,content,intensity,an average UW-Madison student,6,61,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:49.941Z,emotion_scenarios,life_going_well,content,confidence,an average UW-Madison student,7,62,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:49.948Z,emotion_scenarios,life_going_well,happy,intensity,an average UW-Madison student,6,63,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:49.953Z,emotion_scenarios,life_going_well,happy,confidence,an average UW-Madison student,7,64,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:49.957Z,emotion_scenarios,life_going_well,pride,intensity,an average UW-Madison student,6,65,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:49.962Z,emotion_scenarios,life_going_well,pride,confidence,an average UW-Madison student,7,66,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:55.744Z,emotion_scenarios,speech_celebration,anxious,intensity,an average UW-Madison student,4,67,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:55.764Z,emotion_scenarios,speech_celebration,anxious,confidence,an average UW-Madison student,4,68,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:55.771Z,emotion_scenarios,speech_celebration,scared,intensity,an average UW-Madison student,3,69,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:55.776Z,emotion_scenarios,speech_celebration,scared,confidence,an average UW-Madison student,3,70,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:55.781Z,emotion_scenarios,speech_celebration,excited,intensity,an average UW-Madison student,6,71,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:03:55.787Z,emotion_scenarios,speech_celebration,excited,confidence,an average UW-Madison student,7,72,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:03.669Z,emotion_scenarios,credit_stolen,sad,intensity,an average UW-Madison student,4,73,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:03.680Z,emotion_scenarios,credit_stolen,sad,confidence,an average UW-Madison student,5,74,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:03.690Z,emotion_scenarios,credit_stolen,annoyed,intensity,an average UW-Madison student,4,75,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:03.695Z,emotion_scenarios,credit_stolen,annoyed,confidence,an average UW-Madison student,7,76,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:03.699Z,emotion_scenarios,credit_stolen,angry,intensity,an average UW-Madison student,7,77,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:03.704Z,emotion_scenarios,credit_stolen,angry,confidence,an average UW-Madison student,5,78,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:56.582Z,emotion_scenarios,new_city,excited,intensity,an average UW-Madison student,4,79,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:56.592Z,emotion_scenarios,new_city,excited,confidence,an average UW-Madison student,5,80,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:56.600Z,emotion_scenarios,new_city,anxious,intensity,an average UW-Madison student,3,81,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:56.606Z,emotion_scenarios,new_city,anxious,confidence,an average UW-Madison student,4,82,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:56.619Z,emotion_scenarios,new_city,happy,intensity,an average UW-Madison student,5,83,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:04:56.624Z,emotion_scenarios,new_city,happy,confidence,an average UW-Madison student,6,84,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:00.020Z,emotion_scenarios,stood_up_friend,sad,intensity,an average UW-Madison student,6,85,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:00.042Z,emotion_scenarios,stood_up_friend,sad,confidence,an average UW-Madison student,6,86,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:00.050Z,emotion_scenarios,stood_up_friend,angry,intensity,an average UW-Madison student,6,87,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:00.055Z,emotion_scenarios,stood_up_friend,angry,confidence,an average UW-Madison student,6,88,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:00.060Z,emotion_scenarios,stood_up_friend,embarrassed,intensity,an average UW-Madison student,6,89,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:00.065Z,emotion_scenarios,stood_up_friend,embarrassed,confidence,an average UW-Madison student,6,90,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:03.473Z,emotion_scenarios,goal_achieved,happy,intensity,an average UW-Madison student,6,91,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:03.486Z,emotion_scenarios,goal_achieved,happy,confidence,an average UW-Madison student,6,92,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:03.492Z,emotion_scenarios,goal_achieved,content,intensity,an average UW-Madison student,6,93,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:03.496Z,emotion_scenarios,goal_achieved,content,confidence,an average UW-Madison student,5,94,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:03.501Z,emotion_scenarios,goal_achieved,pride,intensity,an average UW-Madison student,4,95,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:03.506Z,emotion_scenarios,goal_achieved,pride,confidence,an average UW-Madison student,4,96,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:09.655Z,emotion_scenarios,stood_up_friend,sad,intensity,yourself,5,97,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:09.667Z,emotion_scenarios,stood_up_friend,sad,confidence,yourself,5,98,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:09.673Z,emotion_scenarios,stood_up_friend,embarrassed,intensity,yourself,5,99,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:09.677Z,emotion_scenarios,stood_up_friend,embarrassed,confidence,yourself,5,100,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:09.682Z,emotion_scenarios,stood_up_friend,angry,intensity,yourself,5,101,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:09.686Z,emotion_scenarios,stood_up_friend,angry,confidence,yourself,5,102,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:12.804Z,emotion_scenarios,speech_celebration,anxious,intensity,yourself,5,103,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:12.821Z,emotion_scenarios,speech_celebration,anxious,confidence,yourself,5,104,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:12.829Z,emotion_scenarios,speech_celebration,excited,intensity,yourself,5,105,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:12.833Z,emotion_scenarios,speech_celebration,excited,confidence,yourself,5,106,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:12.838Z,emotion_scenarios,speech_celebration,scared,intensity,yourself,5,107,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:12.842Z,emotion_scenarios,speech_celebration,scared,confidence,yourself,5,108,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:16.891Z,emotion_scenarios,life_going_well,content,intensity,yourself,5,109,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:16.906Z,emotion_scenarios,life_going_well,content,confidence,yourself,5,110,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:16.913Z,emotion_scenarios,life_going_well,pride,intensity,yourself,5,111,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:16.918Z,emotion_scenarios,life_going_well,pride,confidence,yourself,5,112,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:16.923Z,emotion_scenarios,life_going_well,happy,intensity,yourself,5,113,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:16.927Z,emotion_scenarios,life_going_well,happy,confidence,yourself,5,114,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:21.287Z,emotion_scenarios,bug_in_food,disgust,intensity,yourself,7,115,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:21.301Z,emotion_scenarios,bug_in_food,disgust,confidence,yourself,6,116,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:21.311Z,emotion_scenarios,bug_in_food,angry,intensity,yourself,6,117,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:21.317Z,emotion_scenarios,bug_in_food,angry,confidence,yourself,7,118,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:21.322Z,emotion_scenarios,bug_in_food,scared,intensity,yourself,5,119,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:21.325Z,emotion_scenarios,bug_in_food,scared,confidence,yourself,7,120,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:26.126Z,emotion_scenarios,new_city,happy,intensity,yourself,6,121,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:26.150Z,emotion_scenarios,new_city,happy,confidence,yourself,7,122,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:26.158Z,emotion_scenarios,new_city,excited,intensity,yourself,3,123,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:26.163Z,emotion_scenarios,new_city,excited,confidence,yourself,2,124,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:26.169Z,emotion_scenarios,new_city,anxious,intensity,yourself,2,125,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:26.173Z,emotion_scenarios,new_city,anxious,confidence,yourself,4,126,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:30.872Z,emotion_scenarios,credit_stolen,sad,intensity,yourself,2,127,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:30.888Z,emotion_scenarios,credit_stolen,sad,confidence,yourself,2,128,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:30.893Z,emotion_scenarios,credit_stolen,annoyed,intensity,yourself,4,129,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:30.896Z,emotion_scenarios,credit_stolen,annoyed,confidence,yourself,5,130,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:30.899Z,emotion_scenarios,credit_stolen,angry,intensity,yourself,3,131,2.0.0
+123,123,123,Left,123,13,13:23,11111-11-11,2026-06-10T08:05:30.903Z,emotion_scenarios,credit_stolen,angry,confidence,yourself,4,132,2.0.0

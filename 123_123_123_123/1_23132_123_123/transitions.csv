@@ -1,0 +1,243 @@
+dyadId,participantId,partnerId,computer,subjectInitials,raName,sessionTime,sessionDate,sessionTimestamp,ratingTask,subTask,emotion1,emotion2,ratingPerson,response,trialNumber,softwareVersion
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:46.942Z,emotion_scenarios,stood_up_friend,sad,intensity,an average UW-Madison student,1,1,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:46.987Z,emotion_scenarios,stood_up_friend,sad,confidence,an average UW-Madison student,1,2,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:47.001Z,emotion_scenarios,stood_up_friend,embarrassed,intensity,an average UW-Madison student,1,3,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:47.006Z,emotion_scenarios,stood_up_friend,embarrassed,confidence,an average UW-Madison student,1,4,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:47.012Z,emotion_scenarios,stood_up_friend,angry,intensity,an average UW-Madison student,1,5,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:47.018Z,emotion_scenarios,stood_up_friend,angry,confidence,an average UW-Madison student,1,6,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:50.170Z,emotion_scenarios,goal_achieved,pride,intensity,an average UW-Madison student,1,7,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:50.203Z,emotion_scenarios,goal_achieved,pride,confidence,an average UW-Madison student,1,8,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:50.220Z,emotion_scenarios,goal_achieved,content,intensity,an average UW-Madison student,1,9,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:50.236Z,emotion_scenarios,goal_achieved,content,confidence,an average UW-Madison student,1,10,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:50.244Z,emotion_scenarios,goal_achieved,happy,intensity,an average UW-Madison student,1,11,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:50.252Z,emotion_scenarios,goal_achieved,happy,confidence,an average UW-Madison student,1,12,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:53.020Z,emotion_scenarios,speech_celebration,excited,intensity,an average UW-Madison student,1,13,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:53.048Z,emotion_scenarios,speech_celebration,excited,confidence,an average UW-Madison student,1,14,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:53.078Z,emotion_scenarios,speech_celebration,anxious,intensity,an average UW-Madison student,1,15,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:53.088Z,emotion_scenarios,speech_celebration,anxious,confidence,an average UW-Madison student,1,16,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:53.099Z,emotion_scenarios,speech_celebration,scared,intensity,an average UW-Madison student,1,17,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:53.107Z,emotion_scenarios,speech_celebration,scared,confidence,an average UW-Madison student,1,18,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:56.745Z,emotion_scenarios,new_city,happy,intensity,an average UW-Madison student,1,19,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:56.782Z,emotion_scenarios,new_city,happy,confidence,an average UW-Madison student,1,20,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:56.800Z,emotion_scenarios,new_city,excited,intensity,an average UW-Madison student,1,21,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:56.813Z,emotion_scenarios,new_city,excited,confidence,an average UW-Madison student,1,22,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:56.826Z,emotion_scenarios,new_city,anxious,intensity,an average UW-Madison student,1,23,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:19:56.835Z,emotion_scenarios,new_city,anxious,confidence,an average UW-Madison student,1,24,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:00.666Z,emotion_scenarios,credit_stolen,annoyed,intensity,an average UW-Madison student,1,25,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:00.700Z,emotion_scenarios,credit_stolen,annoyed,confidence,an average UW-Madison student,1,26,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:00.711Z,emotion_scenarios,credit_stolen,angry,intensity,an average UW-Madison student,1,27,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:00.719Z,emotion_scenarios,credit_stolen,angry,confidence,an average UW-Madison student,1,28,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:00.727Z,emotion_scenarios,credit_stolen,sad,intensity,an average UW-Madison student,1,29,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:00.735Z,emotion_scenarios,credit_stolen,sad,confidence,an average UW-Madison student,1,30,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:03.896Z,emotion_scenarios,friend_moving,happy,intensity,an average UW-Madison student,3,31,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:03.913Z,emotion_scenarios,friend_moving,happy,confidence,an average UW-Madison student,3,32,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:03.920Z,emotion_scenarios,friend_moving,sad,intensity,an average UW-Madison student,2,33,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:03.924Z,emotion_scenarios,friend_moving,sad,confidence,an average UW-Madison student,2,34,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:03.928Z,emotion_scenarios,friend_moving,anxious,intensity,an average UW-Madison student,1,35,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:03.933Z,emotion_scenarios,friend_moving,anxious,confidence,an average UW-Madison student,1,36,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:07.961Z,emotion_scenarios,life_going_well,content,intensity,an average UW-Madison student,2,37,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:07.995Z,emotion_scenarios,life_going_well,content,confidence,an average UW-Madison student,1,38,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:08.008Z,emotion_scenarios,life_going_well,happy,intensity,an average UW-Madison student,3,39,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:08.026Z,emotion_scenarios,life_going_well,happy,confidence,an average UW-Madison student,3,40,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:08.038Z,emotion_scenarios,life_going_well,pride,intensity,an average UW-Madison student,3,41,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:08.048Z,emotion_scenarios,life_going_well,pride,confidence,an average UW-Madison student,2,42,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:11.666Z,emotion_scenarios,bug_in_food,disgust,intensity,an average UW-Madison student,1,43,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:11.675Z,emotion_scenarios,bug_in_food,disgust,confidence,an average UW-Madison student,1,44,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:11.686Z,emotion_scenarios,bug_in_food,angry,intensity,an average UW-Madison student,1,45,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:11.690Z,emotion_scenarios,bug_in_food,angry,confidence,an average UW-Madison student,1,46,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:11.695Z,emotion_scenarios,bug_in_food,scared,intensity,an average UW-Madison student,1,47,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:11.699Z,emotion_scenarios,bug_in_food,scared,confidence,an average UW-Madison student,1,48,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:15.977Z,emotion_scenarios,friend_moving,sad,intensity,yourself,1,49,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:15.987Z,emotion_scenarios,friend_moving,sad,confidence,yourself,1,50,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:15.996Z,emotion_scenarios,friend_moving,anxious,intensity,yourself,1,51,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:16.000Z,emotion_scenarios,friend_moving,anxious,confidence,yourself,1,52,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:16.004Z,emotion_scenarios,friend_moving,happy,intensity,yourself,1,53,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:16.010Z,emotion_scenarios,friend_moving,happy,confidence,yourself,1,54,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:19.831Z,emotion_scenarios,life_going_well,content,intensity,yourself,1,55,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:19.840Z,emotion_scenarios,life_going_well,content,confidence,yourself,1,56,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:19.848Z,emotion_scenarios,life_going_well,happy,intensity,yourself,1,57,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:19.853Z,emotion_scenarios,life_going_well,happy,confidence,yourself,1,58,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:19.859Z,emotion_scenarios,life_going_well,pride,intensity,yourself,1,59,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:19.864Z,emotion_scenarios,life_going_well,pride,confidence,yourself,1,60,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:23.240Z,emotion_scenarios,bug_in_food,angry,intensity,yourself,1,61,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:23.270Z,emotion_scenarios,bug_in_food,angry,confidence,yourself,1,62,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:23.289Z,emotion_scenarios,bug_in_food,disgust,intensity,yourself,1,63,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:23.301Z,emotion_scenarios,bug_in_food,disgust,confidence,yourself,1,64,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:23.310Z,emotion_scenarios,bug_in_food,scared,intensity,yourself,1,65,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:23.317Z,emotion_scenarios,bug_in_food,scared,confidence,yourself,1,66,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:27.085Z,emotion_scenarios,new_city,happy,intensity,yourself,1,67,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:27.116Z,emotion_scenarios,new_city,happy,confidence,yourself,1,68,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:27.133Z,emotion_scenarios,new_city,excited,intensity,yourself,1,69,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:27.148Z,emotion_scenarios,new_city,excited,confidence,yourself,1,70,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:27.160Z,emotion_scenarios,new_city,anxious,intensity,yourself,1,71,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:27.169Z,emotion_scenarios,new_city,anxious,confidence,yourself,1,72,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:30.577Z,emotion_scenarios,credit_stolen,sad,intensity,yourself,1,73,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:30.596Z,emotion_scenarios,credit_stolen,sad,confidence,yourself,1,74,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:30.602Z,emotion_scenarios,credit_stolen,angry,intensity,yourself,1,75,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:30.608Z,emotion_scenarios,credit_stolen,angry,confidence,yourself,1,76,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:30.612Z,emotion_scenarios,credit_stolen,annoyed,intensity,yourself,1,77,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:30.616Z,emotion_scenarios,credit_stolen,annoyed,confidence,yourself,1,78,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:33.989Z,emotion_scenarios,goal_achieved,pride,intensity,yourself,1,79,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:34.039Z,emotion_scenarios,goal_achieved,pride,confidence,yourself,1,80,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:34.053Z,emotion_scenarios,goal_achieved,content,intensity,yourself,1,81,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:34.071Z,emotion_scenarios,goal_achieved,content,confidence,yourself,1,82,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:34.085Z,emotion_scenarios,goal_achieved,happy,intensity,yourself,1,83,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:34.094Z,emotion_scenarios,goal_achieved,happy,confidence,yourself,1,84,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:38.108Z,emotion_scenarios,speech_celebration,anxious,intensity,yourself,1,85,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:38.135Z,emotion_scenarios,speech_celebration,anxious,confidence,yourself,1,86,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:38.153Z,emotion_scenarios,speech_celebration,excited,intensity,yourself,1,87,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:38.164Z,emotion_scenarios,speech_celebration,excited,confidence,yourself,1,88,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:38.179Z,emotion_scenarios,speech_celebration,scared,intensity,yourself,1,89,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:38.188Z,emotion_scenarios,speech_celebration,scared,confidence,yourself,1,90,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:41.432Z,emotion_scenarios,stood_up_friend,angry,intensity,yourself,1,91,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:41.447Z,emotion_scenarios,stood_up_friend,angry,confidence,yourself,1,92,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:41.460Z,emotion_scenarios,stood_up_friend,sad,intensity,yourself,1,93,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:41.469Z,emotion_scenarios,stood_up_friend,sad,confidence,yourself,1,94,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:41.478Z,emotion_scenarios,stood_up_friend,embarrassed,intensity,yourself,1,95,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:41.486Z,emotion_scenarios,stood_up_friend,embarrassed,confidence,yourself,1,96,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:45.760Z,emotion_scenarios,speech_celebration,anxious,intensity,your partner,1,97,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:45.813Z,emotion_scenarios,speech_celebration,anxious,confidence,your partner,1,98,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:45.836Z,emotion_scenarios,speech_celebration,scared,intensity,your partner,1,99,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:45.850Z,emotion_scenarios,speech_celebration,scared,confidence,your partner,1,100,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:45.858Z,emotion_scenarios,speech_celebration,excited,intensity,your partner,1,101,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:45.866Z,emotion_scenarios,speech_celebration,excited,confidence,your partner,1,102,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:48.959Z,emotion_scenarios,new_city,excited,intensity,your partner,1,103,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:48.987Z,emotion_scenarios,new_city,excited,confidence,your partner,1,104,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:49.006Z,emotion_scenarios,new_city,anxious,intensity,your partner,1,105,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:49.018Z,emotion_scenarios,new_city,anxious,confidence,your partner,1,106,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:49.031Z,emotion_scenarios,new_city,happy,intensity,your partner,1,107,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:49.041Z,emotion_scenarios,new_city,happy,confidence,your partner,1,108,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:52.355Z,emotion_scenarios,credit_stolen,annoyed,intensity,your partner,1,109,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:52.379Z,emotion_scenarios,credit_stolen,annoyed,confidence,your partner,1,110,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:52.395Z,emotion_scenarios,credit_stolen,angry,intensity,your partner,1,111,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:52.405Z,emotion_scenarios,credit_stolen,angry,confidence,your partner,1,112,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:52.412Z,emotion_scenarios,credit_stolen,sad,intensity,your partner,1,113,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:52.420Z,emotion_scenarios,credit_stolen,sad,confidence,your partner,1,114,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:56.477Z,emotion_scenarios,stood_up_friend,embarrassed,intensity,your partner,1,115,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:56.512Z,emotion_scenarios,stood_up_friend,embarrassed,confidence,your partner,1,116,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:56.528Z,emotion_scenarios,stood_up_friend,sad,intensity,your partner,1,117,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:56.539Z,emotion_scenarios,stood_up_friend,sad,confidence,your partner,1,118,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:56.547Z,emotion_scenarios,stood_up_friend,angry,intensity,your partner,1,119,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:20:56.554Z,emotion_scenarios,stood_up_friend,angry,confidence,your partner,1,120,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:01.769Z,emotion_scenarios,life_going_well,content,intensity,your partner,1,121,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:01.799Z,emotion_scenarios,life_going_well,content,confidence,your partner,1,122,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:01.829Z,emotion_scenarios,life_going_well,happy,intensity,your partner,1,123,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:01.847Z,emotion_scenarios,life_going_well,happy,confidence,your partner,1,124,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:01.855Z,emotion_scenarios,life_going_well,pride,intensity,your partner,1,125,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:01.863Z,emotion_scenarios,life_going_well,pride,confidence,your partner,1,126,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:05.209Z,emotion_scenarios,friend_moving,anxious,intensity,your partner,7,127,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:05.237Z,emotion_scenarios,friend_moving,anxious,confidence,your partner,7,128,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:05.251Z,emotion_scenarios,friend_moving,happy,intensity,your partner,3,129,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:05.262Z,emotion_scenarios,friend_moving,happy,confidence,your partner,3,130,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:05.274Z,emotion_scenarios,friend_moving,sad,intensity,your partner,1,131,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:05.282Z,emotion_scenarios,friend_moving,sad,confidence,your partner,1,132,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:08.340Z,emotion_scenarios,goal_achieved,content,intensity,your partner,7,133,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:08.372Z,emotion_scenarios,goal_achieved,content,confidence,your partner,7,134,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:08.385Z,emotion_scenarios,goal_achieved,happy,intensity,your partner,7,135,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:08.398Z,emotion_scenarios,goal_achieved,happy,confidence,your partner,7,136,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:08.410Z,emotion_scenarios,goal_achieved,pride,intensity,your partner,7,137,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:08.419Z,emotion_scenarios,goal_achieved,pride,confidence,your partner,7,138,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:11.542Z,emotion_scenarios,bug_in_food,angry,intensity,your partner,7,139,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:11.575Z,emotion_scenarios,bug_in_food,angry,confidence,your partner,7,140,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:11.589Z,emotion_scenarios,bug_in_food,disgust,intensity,your partner,7,141,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:11.602Z,emotion_scenarios,bug_in_food,disgust,confidence,your partner,7,142,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:11.615Z,emotion_scenarios,bug_in_food,scared,intensity,your partner,7,143,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:11.624Z,emotion_scenarios,bug_in_food,scared,confidence,your partner,7,144,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.469Z,self_frequency,How often do you feel unrestrained?,,,,45,145,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.475Z,self_frequency,How often do you feel contempt?,,,,43,146,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.480Z,self_frequency,How often do you feel sad?,,,,53,147,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.485Z,self_frequency,How often do you feel assertive?,,,,46,148,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.491Z,self_frequency,How often do you feel grouchy?,,,,47,149,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.497Z,self_frequency,How often do you feel confident?,,,,64,150,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.501Z,self_frequency,How often do you feel talkative?,,,,63,151,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.506Z,self_frequency,How often do you feel bold?,,,,67,152,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.509Z,self_frequency,How often do you feel nervous?,,,,65,153,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.513Z,self_frequency,How often do you feel satisfaction?,,,,58,154,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.515Z,self_frequency,How often do you feel embarrassment?,,,,59,155,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.519Z,self_frequency,How often do you feel irritable?,,,,61,156,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.523Z,self_frequency,How often do you feel disgust?,,,,60,157,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.526Z,self_frequency,How often do you feel lively?,,,,60,158,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:21:41.530Z,self_frequency,How often do you feel love?,,,,51,159,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:08.510Z,experience,How often were you thinking about the fact that your conversation was being video recorded?,,,,5,160,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:08.522Z,experience,How comfortable did you feel during the conversation?,,,,5,161,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:08.526Z,experience,We're interested in hearing more about your experience during your conversation. Please share any thoughts that you have below,,,,"Line 1, Hello, Testing, Commas, Working, , , , , , End. ",162,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:12.482Z,partner_sliders,Is familiar to me?,,,,26,163,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:12.495Z,partner_sliders,Is similar to me?,,,,59,164,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:12.514Z,partner_sliders,Is close to me?,,,,56,165,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.819Z,expressivity,There have been times when I have not been able to stop crying even though I tried to stop.,,,,2,166,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.834Z,expressivity,It is difficult for me to hide my fear.,,,,2,167,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.843Z,expressivity,I laugh out loud when someone tells me a joke that I think is funny.,,,,2,168,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.853Z,expressivity,"Whenever I feel negative emotions, people can easily see exactly what I am feeling.",,,,2,169,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.863Z,expressivity,I experience my emotions very strongly.,,,,2,170,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.874Z,expressivity,I am an emotionally expressive person.,,,,2,171,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.883Z,expressivity,"No matter how nervous or upset I am, I tend to keep a calm exterior.",,,,2,172,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.890Z,expressivity,I've learned it is better to suppress my anger than to show it.,,,,2,173,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.899Z,expressivity,What I'm feeling is written all over my face.,,,,2,174,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.909Z,expressivity,"I am sometimes unable to hide my feelings, even though I would like to.",,,,2,175,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.915Z,expressivity,"When I'm happy, my feelings show.",,,,2,176,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.921Z,expressivity,My body reacts very strongly to emotional situations.,,,,2,177,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.930Z,expressivity,I sometimes cry during sad movies.,,,,2,178,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.936Z,expressivity,People often do not know what I am feeling.,,,,2,179,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.946Z,expressivity,"Whenever I feel positive emotions, people can easily see exactly what I am feeling.",,,,2,180,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:27.952Z,expressivity,I have strong emotions.,,,,2,181,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.857Z,social_connectedness,I feel distant from people.,,,,3,182,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.874Z,social_connectedness,I have little sense of togetherness with my peers.,,,,3,183,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.883Z,social_connectedness,I feel like an outsider.,,,,3,184,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.888Z,social_connectedness,I don't feel I participate with anyone or any group.,,,,3,185,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.892Z,social_connectedness,I feel understood by the people I know.,,,,3,186,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.897Z,social_connectedness,I am in tune with the world.,,,,3,187,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.903Z,social_connectedness,My friends feel like family.,,,,3,188,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.907Z,social_connectedness,I am able to relate to my peers.,,,,3,189,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.913Z,social_connectedness,"Even around people I know, I don't feel that I really belong.",,,,3,190,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.918Z,social_connectedness,I feel comfortable in the presence of strangers.,,,,3,191,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.923Z,social_connectedness,I see people as friendly and approachable.,,,,3,192,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.926Z,social_connectedness,I feel disconnected from the world around me.,,,,3,193,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.930Z,social_connectedness,I find myself actively involved in people's lives.,,,,3,194,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.933Z,social_connectedness,I don't feel related to most people.,,,,3,195,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.938Z,social_connectedness,I see myself as a loner.,,,,3,196,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.941Z,social_connectedness,I fit well in new situations.,,,,3,197,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.945Z,social_connectedness,I am able to connect with other people.,,,,3,198,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.949Z,social_connectedness,"Even among my friends, there is no sense of brother/sisterhood.",,,,3,199,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.953Z,social_connectedness,I feel close to people.,,,,3,200,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:44.956Z,social_connectedness,I catch myself losing a sense of connectedness with society.,,,,3,201,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.612Z,loneliness,How often do you feel close to people?,,,,0,202,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.627Z,loneliness,"How often do you feel that you are ""in tune"" with the people around you?",,,,0,203,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.639Z,loneliness,How often do you feel shy?,,,,0,204,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.653Z,loneliness,How often do you feel you can find companionship when you want it?,,,,0,205,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.664Z,loneliness,How often do you feel that there are people who really understand you?,,,,0,206,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.675Z,loneliness,How often do you feel that you lack companionship?,,,,0,207,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.683Z,loneliness,How often do you feel outgoing and friendly?,,,,0,208,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.691Z,loneliness,How often do you feel that your interests and ideas are not shared by those around you?,,,,0,209,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.699Z,loneliness,How often do you feel that your relationships with others are not meaningful?,,,,0,210,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.706Z,loneliness,How often do you feel that there is no one you can turn to?,,,,0,211,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.714Z,loneliness,How often do you feel left out?,,,,0,212,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.720Z,loneliness,How often do you feel that people are around you but not with you?,,,,0,213,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.726Z,loneliness,How often do you feel that you have a lot in common with the people around you?,,,,0,214,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.731Z,loneliness,How often do you feel alone?,,,,0,215,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.736Z,loneliness,How often do you feel that there are people you can talk to?,,,,0,216,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.740Z,loneliness,How often do you feel part of a group of friends?,,,,0,217,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.746Z,loneliness,How often do you feel that no one really knows you well?,,,,0,218,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.750Z,loneliness,How often do you feel that there are people you can turn to?,,,,0,219,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.754Z,loneliness,How often do you feel that you are no longer close to anyone?,,,,0,220,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:22:58.759Z,loneliness,How often do you feel isolated from others?,,,,0,221,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:06.748Z,autism,I often notice small sounds when others do not,,,,1,222,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:06.760Z,autism,"I usually concentrate more on the whole picture, rather than the small details",,,,1,223,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:06.764Z,autism,"I like to collect information about categories of things (e.g. types of car, types of bird, types of train, types of plant etc)",,,,1,224,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:06.770Z,autism,I find it difficult to work out people's intentions,,,,1,225,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:06.776Z,autism,"If there is an interruption, I can switch back to what I was doing very quickly",,,,1,226,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:06.780Z,autism,I find it easy to work out what someone is thinking or feeling just by looking at their face,,,,1,227,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:06.783Z,autism,I find it easy to do more than one thing at once,,,,1,228,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:06.786Z,autism,I find it easy to 'read between the lines' when someone is talking to me,,,,1,229,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:06.789Z,autism,When I'm reading a story I find it difficult to work out the characters' intentions,,,,1,230,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:06.792Z,autism,I know how to tell if someone listening to me is getting bored,,,,1,231,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:09.843Z,partner_history,Have you met your partner prior to today's study?,,,,No,232,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:09.852Z,partner_history,How long have you known your partner? (in months),,,,,233,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:09.861Z,partner_history,I am happy with my friendship with my partner,,,,,234,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:23:09.873Z,partner_history,My partner is fun to sit and talk with,,,,,235,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:24:02.872Z,demographics,Enter your age:,,,,19,236,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:24:02.881Z,demographics,"Are you Spanish, Hispanic, or Latino?",,,,yes,237,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:24:02.887Z,demographics,Choose one or more races that you consider yourself to be:,,,,White;Asian,238,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:24:02.901Z,demographics,Please specify (other race):,,,,,239,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:24:02.913Z,demographics,What is your sex?,,,,female,240,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:24:02.921Z,demographics,Please provide the zip code of your permanent address (where you grew up):,,,,111111,241,2.0.0
+1,23132,123,Left,123,123,00:32,13213-12-31,2026-06-10T08:24:20.401Z,study_feedback,We're interested in hearing more about your experience with our study. Please share any thoughts you have below.,,,,"start, Testing, Commas, ENg,,, ,,agina, , again,,,, end.",242,2.0.0

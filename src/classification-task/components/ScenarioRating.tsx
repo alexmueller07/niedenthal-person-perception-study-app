@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import PressKeyPrompt from "../../components/PressKeyPrompt";
+import ConfirmationModal from "../../components/ConfirmationModal";
 import type { Scenario } from "../scenarios";
 
 export interface EmotionRating {
   emotion: string;
-  intensity: number;
-  confidence: number;
+  // "" when the participant skipped the rating (skipping is allowed in a study).
+  intensity: number | "";
+  confidence: number | "";
 }
 
 interface ScenarioRatingProps {
@@ -70,7 +71,7 @@ export default function ScenarioRating({
   // Randomize scenario order once per mount (mount is keyed per target upstream).
   const [orderedScenarios] = useState<Scenario[]>(() => shuffle(scenarios));
   const [scenarioIndex, setScenarioIndex] = useState(0);
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [showIncompleteConfirm, setShowIncompleteConfirm] = useState(false);
 
   const current = orderedScenarios[scenarioIndex];
 
@@ -85,24 +86,22 @@ export default function ScenarioRating({
   useEffect(() => {
     setIntensity({});
     setConfidence({});
-    setAttemptedSubmit(false);
+    setShowIncompleteConfirm(false);
   }, [scenarioIndex]);
 
   const isComplete = orderedEmotions.every(
     (e) => intensity[e] !== undefined && confidence[e] !== undefined
   );
 
-  const submit = useCallback(() => {
-    if (!isComplete) {
-      setAttemptedSubmit(true);
-      return;
-    }
+  // Records the scenario (blank for any skipped rating) and advances.
+  const doSubmit = useCallback(() => {
     const ratings: EmotionRating[] = orderedEmotions.map((e) => ({
       emotion: e,
-      intensity: intensity[e],
-      confidence: confidence[e],
+      intensity: intensity[e] ?? "",
+      confidence: confidence[e] ?? "",
     }));
     onScenarioComplete(current.id, ratings);
+    setShowIncompleteConfirm(false);
 
     if (scenarioIndex + 1 >= orderedScenarios.length) {
       onAllScenariosComplete();
@@ -110,7 +109,6 @@ export default function ScenarioRating({
       setScenarioIndex((i) => i + 1);
     }
   }, [
-    isComplete,
     orderedEmotions,
     intensity,
     confidence,
@@ -121,17 +119,11 @@ export default function ScenarioRating({
     onAllScenariosComplete,
   ]);
 
-  // Tab submits, matching the rest of the study's interaction idiom.
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Tab") {
-        event.preventDefault();
-        submit();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [submit]);
+  // Next button: warn (but never force) when something was left blank.
+  const handleNext = () => {
+    if (isComplete) doSubmit();
+    else setShowIncompleteConfirm(true);
+  };
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black py-12 overflow-y-auto">
@@ -154,16 +146,25 @@ export default function ScenarioRating({
           ))}
         </div>
 
-        {attemptedSubmit && !isComplete && (
-          <p className="text-red-400 text-lg text-center mt-8">
-            Please answer every rating before continuing.
-          </p>
-        )}
-
-        <div className="flex justify-center mt-4">
-          <PressKeyPrompt keyLabel="Tab" text="to submit and continue" />
+        <div className="flex justify-center mt-10">
+          <button
+            type="button"
+            onClick={handleNext}
+            className="px-10 py-3 rounded-lg font-semibold bg-white text-black hover:bg-gray-200 transition-colors"
+          >
+            Next
+          </button>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={showIncompleteConfirm}
+        onClose={() => setShowIncompleteConfirm(false)}
+        onConfirm={doSubmit}
+        message="Hey, you didn't answer every question on this screen. Are you sure you want to continue?"
+        confirmText="Continue anyway"
+        cancelText="Go back"
+      />
     </div>
   );
 }
