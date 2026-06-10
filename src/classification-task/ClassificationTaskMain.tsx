@@ -4,7 +4,9 @@ import { csvEscape } from "../utils/csv";
 import type { FormData } from "../App";
 import PressKeyPrompt from "../components/PressKeyPrompt";
 import Instructions from "../dyad-task/Instructions";
-import EmotionsRating from "./components/EmotionsRating";
+import ScenarioRating from "./components/ScenarioRating";
+import type { EmotionRating } from "./components/ScenarioRating";
+import { SCENARIOS } from "./scenarios";
 import PartnerHistory from "./PartnerHistory";
 import SelfFrequency from "./SelfFrequency";
 import Loneliness from "./Loneliness";
@@ -18,6 +20,23 @@ import Autism from "./Autism";
 import type { ClassificationStepData } from "./types";
 
 const SOFTWARE_VERSION = "2.0.0";
+
+// Instructions shown before the situational emotion-rating task.
+const SCENARIO_INSTRUCTIONS = [
+  "In this part of the study, you will read a series of situations.",
+  "For each situation, you will rate the degree to which a person would experience different emotions in that situation.",
+  "You will make each rating on a scale from 1 (Not at all) to 7 (Extremely).",
+  "After each emotion rating, you will also rate how confident you are about that rating, again from 1 (Not at all) to 7 (Extremely).",
+  "You will be asked to provide ratings for three different people: yourself, your partner, and an average UW-Madison student.",
+  "The three people will be presented in random order.",
+  "For each person, please try to be as accurate as possible.",
+  "We ask that you answer each question efficiently in order to keep your participation time within one hour.",
+];
+
+// Grammatical phrase for the rated target, used in the emotion prompt. "your
+// partner" and "an average UW-Madison student" already read correctly; only
+// "yourself" needs to become "you".
+const targetPhrase = (person: string): string => (person === "yourself" ? "you" : person);
 
 interface ClassificationTaskMainProps {
   formData: FormData;
@@ -90,7 +109,7 @@ function ClassificationTaskMain({
       () => Math.random() - 0.5
     );
     setFormOrder([
-      "emotionTransitions",
+      "scenarios",
       "selfFrequency",
       "experience",
       "partnerSliders",
@@ -104,88 +123,11 @@ function ClassificationTaskMain({
     ]);
   }, [csvFilePath]);
 
-  const emotionTransitions = [
-    { initial: "assertive", final: "confident" },
-    { initial: "assertive", final: "grouchy" },
-    { initial: "assertive", final: "sad" },
-    { initial: "assertive", final: "assertive" },
-    { initial: "assertive", final: "unrestrained" },
-    { initial: "confident", final: "confident" },
-    { initial: "confident", final: "grouchy" },
-    { initial: "confident", final: "sad" },
-    { initial: "confident", final: "assertive" },
-    { initial: "confident", final: "unrestrained" },
-    { initial: "grouchy", final: "confident" },
-    { initial: "grouchy", final: "grouchy" },
-    { initial: "grouchy", final: "sad" },
-    { initial: "grouchy", final: "assertive" },
-    { initial: "grouchy", final: "unrestrained" },
-    { initial: "sad", final: "confident" },
-    { initial: "sad", final: "grouchy" },
-    { initial: "sad", final: "sad" },
-    { initial: "sad", final: "assertive" },
-    { initial: "sad", final: "unrestrained" },
-    { initial: "unrestrained", final: "confident" },
-    { initial: "unrestrained", final: "grouchy" },
-    { initial: "unrestrained", final: "sad" },
-    { initial: "unrestrained", final: "assertive" },
-    { initial: "unrestrained", final: "unrestrained" },
-    { initial: "bold", final: "nervous" },
-    { initial: "bold", final: "irritable" },
-    { initial: "bold", final: "lively" },
-    { initial: "bold", final: "bold" },
-    { initial: "bold", final: "talkative" },
-    { initial: "irritable", final: "nervous" },
-    { initial: "irritable", final: "irritable" },
-    { initial: "irritable", final: "lively" },
-    { initial: "irritable", final: "bold" },
-    { initial: "irritable", final: "talkative" },
-    { initial: "lively", final: "nervous" },
-    { initial: "lively", final: "irritable" },
-    { initial: "lively", final: "lively" },
-    { initial: "lively", final: "bold" },
-    { initial: "lively", final: "talkative" },
-    { initial: "nervous", final: "nervous" },
-    { initial: "nervous", final: "irritable" },
-    { initial: "nervous", final: "lively" },
-    { initial: "nervous", final: "bold" },
-    { initial: "nervous", final: "talkative" },
-    { initial: "talkative", final: "nervous" },
-    { initial: "talkative", final: "irritable" },
-    { initial: "talkative", final: "lively" },
-    { initial: "talkative", final: "bold" },
-    { initial: "talkative", final: "talkative" },
-    { initial: "contempt", final: "satisfaction" },
-    { initial: "contempt", final: "love" },
-    { initial: "contempt", final: "contempt" },
-    { initial: "contempt", final: "disgust" },
-    { initial: "contempt", final: "embarrassment" },
-    { initial: "disgust", final: "satisfaction" },
-    { initial: "disgust", final: "love" },
-    { initial: "disgust", final: "contempt" },
-    { initial: "disgust", final: "disgust" },
-    { initial: "disgust", final: "embarrassment" },
-    { initial: "embarrassment", final: "satisfaction" },
-    { initial: "embarrassment", final: "love" },
-    { initial: "embarrassment", final: "contempt" },
-    { initial: "embarrassment", final: "disgust" },
-    { initial: "embarrassment", final: "embarrassment" },
-    { initial: "love", final: "satisfaction" },
-    { initial: "love", final: "love" },
-    { initial: "love", final: "contempt" },
-    { initial: "love", final: "disgust" },
-    { initial: "love", final: "embarrassment" },
-    { initial: "satisfaction", final: "satisfaction" },
-    { initial: "satisfaction", final: "love" },
-    { initial: "satisfaction", final: "contempt" },
-    { initial: "satisfaction", final: "disgust" },
-    { initial: "satisfaction", final: "embarrassment" },
-  ];
 
   useEffect(() => {
     const handleKeyPress = async (event: KeyboardEvent) => {
       if (currentStep === "instructions") {
-        if (instructionIndex + 1 >= 10) {
+        if (instructionIndex + 1 >= SCENARIO_INSTRUCTIONS.length) {
           setCurrentStep("ratings");
           return;
         }
@@ -208,16 +150,21 @@ function ClassificationTaskMain({
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [currentStep, instructionIndex, showTransition, onComplete]);
 
-  const handleTransitionSubmit = async (initial: string, final: string, rating: number) => {
+  const handleScenarioComplete = async (scenarioId: string, ratings: EmotionRating[]) => {
     const ratingPerson = shuffledPeople[currentPersonIndex];
     try {
-      await writeCSVRow("emotion_transitions", `${initial}_to_${final}`, initial, final, ratingPerson, rating);
+      // Long format: one row per (emotion, measure). emotion1 = emotion, emotion2 =
+      // measure type ("intensity" | "confidence"), response = the 1-7 value.
+      for (const r of ratings) {
+        await writeCSVRow("emotion_scenarios", scenarioId, r.emotion, "intensity", ratingPerson, r.intensity);
+        await writeCSVRow("emotion_scenarios", scenarioId, r.emotion, "confidence", ratingPerson, r.confidence);
+      }
     } catch (err) {
       handleCsvError(err);
     }
   };
 
-  const handleAllTransitionsComplete = async () => {
+  const handleAllScenariosComplete = async () => {
     if (currentPersonIndex + 1 < shuffledPeople.length) {
       setShowTransition(true);
     } else {
@@ -368,19 +315,8 @@ function ClassificationTaskMain({
             <Instructions
               onBack={() => setInstructionIndex((i) => Math.max(0, i - 1))}
               instructionIndex={instructionIndex}
-              groupSize={5}
-              instructions={[
-                "You will be presented with pairs of emotions.",
-                "The first emotion denotes the current state; the second emotion denotes the next emotional state.",
-                "Your task is to estimate the likelihood of a person feeling the first emotion later feeling the second emotion.",
-                "For this example, what is the chance of a person currently feeling Tired next feeling Excited?",
-                "You will make your rating on a scale from 0-100%, where 0% means that there is zero chance that a person feeling tired will feel excited next, and where 100% means that a person feeling tired now will definitely feel excited next.",
-                "You will be asked to provide ratings for three different people: yourself, your partner, and an average UW-Madison student.",
-                "The three people will be presented in random order.",
-                "For each person, please try to be as accurate as possible.",
-                "This part will take approximately 30 minutes.",
-                "We ask that you answer each question efficiently in order to keep your participation time within one hour.",
-              ]}
+              groupSize={4}
+              instructions={SCENARIO_INSTRUCTIONS}
             />
           </div>
         )}
@@ -392,7 +328,7 @@ function ClassificationTaskMain({
                 <div className="max-w-4xl mx-auto">
                   <h1 className="text-white text-2xl">Phase Complete!</h1>
                   <p className="text-white text-2xl pt-20">
-                    You have completed all emotion transition ratings for{" "}
+                    You have completed all ratings for{" "}
                     <strong>{shuffledPeople[currentPersonIndex]}</strong>.
                   </p>
                   <p className="text-white text-2xl pt-20">
@@ -403,11 +339,12 @@ function ClassificationTaskMain({
               </div>
             ) : shuffledPeople.length > 0 ? (
               <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black overflow-hidden">
-                <EmotionsRating
-                  emotionTransitions={emotionTransitions}
-                  ratingPerson={shuffledPeople[currentPersonIndex]}
-                  onTransitionSubmit={handleTransitionSubmit}
-                  onAllTransitionsComplete={handleAllTransitionsComplete}
+                <ScenarioRating
+                  key={currentPersonIndex}
+                  scenarios={SCENARIOS}
+                  targetPhrase={targetPhrase(shuffledPeople[currentPersonIndex])}
+                  onScenarioComplete={handleScenarioComplete}
+                  onAllScenariosComplete={handleAllScenariosComplete}
                 />
               </div>
             ) : (

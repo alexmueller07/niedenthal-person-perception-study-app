@@ -6,6 +6,90 @@ to collect real participant data.
 
 ---
 
+## 2026-06-10 — Phase B: situational scenarios replace the emotion-transition task
+
+⚠️ **This is a measurement change and MUST be reviewed/approved by Randy before any
+live data collection.** It replaces an existing construct (emotion-transition
+likelihood, "how likely is X to become Y") with a new one (situational emotion
+intensity + confidence). Data collected with this task is NOT comparable to any
+pilot data from the old transition task.
+
+### What changed
+- **Removed:** the emotion-transition task — the 75-pair `emotionTransitions` array,
+  the `EmotionsRating` component (deleted), and its 0–100% slider rating.
+- **Added:** a situational scenario task (`scenarios.ts`,
+  `components/ScenarioRating.tsx`). For each target the participant reads each
+  situation and rates, per emotion, (a) intensity and (b) confidence, each on a
+  **1–7** scale (1 = Not at all, 7 = Extremely).
+- **Files:** `src/classification-task/scenarios.ts` (new),
+  `src/classification-task/components/ScenarioRating.tsx` (new),
+  `src/classification-task/ClassificationTaskMain.tsx` (edited),
+  `src/classification-task/components/EmotionsRating.tsx` (deleted).
+
+### Decisions (confirmed by Alex, 2026-06-10)
+- **8 scenarios** (the mockup set, including "moving to a new city").
+- **No progress counter** — the "scenario #N of 8" from the mockup was intentionally
+  dropped, consistent with Phase A change #1 (don't show remaining progress).
+- **Target-adapted prompts** — the situation is third person ("Imagine that a
+  person…"); the emotion prompt adapts to who is being rated: "Rate the degree to
+  which **you / your partner / an average UW-Madison student** would feel *angry*."
+- **Confidence kept** — every emotion gets a 1–7 "How confident are you about your
+  rating?" follow-up.
+
+### Scenarios and their emotions (3rd-person wording)
+| id | emotions |
+|----|----------|
+| stood_up_friend | angry, embarrassed, sad |
+| goal_achieved | content, happy, pride |
+| life_going_well | content, pride, happy |
+| credit_stolen | sad, annoyed, angry |
+| friend_moving | happy, anxious, sad |
+| bug_in_food | angry, disgust, scared |
+| new_city | happy, anxious, excited |
+| speech_celebration | anxious, excited, scared |
+
+### Randomization (method logged via row order; same approach as the rest of the app)
+- **Target order** (yourself / your partner / average student): randomized — unchanged
+  from before.
+- **Scenario order**: randomized per target (`ScenarioRating` re-mounts per target via
+  a React `key`, reshuffling).
+- **Emotion order within a scenario**: randomized.
+- Presentation order is recoverable from the row sequence + `trialNumber` +
+  `sessionTimestamp` in the output (every rating is its own timestamped row).
+
+### Output / data dictionary (no CSV schema change — reuses the existing columns)
+Written to the same classification file (still named `transitions.csv`; it already
+holds every classification sub-task, distinguished by `ratingTask`). Scenario rows:
+- `ratingTask` = `emotion_scenarios`
+- `subTask` = scenario id (e.g. `stood_up_friend`)
+- `emotion1` = the rated emotion (e.g. `angry`)
+- `emotion2` = the measure: `intensity` or `confidence`
+- `ratingPerson` = `yourself` | `your partner` | `an average UW-Madison student`
+- `response` = the 1–7 value
+- `trialNumber` increments per write (captures presentation order)
+
+This is **long format**: each emotion produces two rows (one `intensity`, one
+`confidence`). 8 scenarios × 3 emotions × 2 measures × 3 targets = **144 rows** per
+participant for this task.
+
+### Instructions
+The pre-task instructions were rewritten for the new task (1–7 scale, confidence,
+three targets). **Draft wording — please review.**
+
+### Wording to confirm with Randy
+- `friend_moving` was completed to "…moving across the country **to start a new
+  job**" (the short list entry was truncated; the mockup had the full clause).
+- Instruction text is a first draft.
+
+### Verification
+- `npm run build` (tsc + vite) → passes.
+- `npm test` → 6/6 pass (CSV regression unaffected).
+- **Not yet interactively QA'd on device.** The full participant flow (instructions →
+  3 targets × 8 scenarios, Tab-to-submit, completeness validation, between-target
+  screens) should be clicked through on a lab machine before live use.
+
+---
+
 ## 2026-06-10 — Phase A: kiosk hardening + data-safety (v2.0.0)
 
 Four researcher-requested changes plus supporting infrastructure. No questionnaire
