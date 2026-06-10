@@ -406,8 +406,6 @@ function ClassificationTaskMain({
                 <EmotionsRating
                   emotionTransitions={emotionTransitions}
                   ratingPerson={shuffledPeople[currentPersonIndex]}
-                  personIndex={currentPersonIndex}
-                  totalPersons={shuffledPeople.length}
                   onTransitionSubmit={handleTransitionSubmit}
                   onAllTransitionsComplete={handleAllTransitionsComplete}
                 />

@@ -4,6 +4,9 @@ import ParticipantForm from "./components/ParticipantForm";
 import DyadTaskMain from "./dyad-task/DyadTaskMain";
 import ClassificationTaskMain from "./classification-task/ClassificationTaskMain";
 import ErrorBanner from "./components/ErrorBanner";
+import AdminQuitModal from "./components/AdminQuitModal";
+import { flushAll } from "./utils/flushRegistry";
+import { isBlockedShortcut } from "./utils/lockdown";
 import { invoke } from "@tauri-apps/api/core";
 
 export interface FormData {
@@ -37,12 +40,48 @@ function App() {
   const [completedTasks, setCompletedTasks] = useState({ dyad: false, classification: false });
   const [taskOrder, setTaskOrder] = useState<number>(0);
   const [csvError, setCsvError] = useState<string | null>(null);
+  const [showAdminQuit, setShowAdminQuit] = useState<boolean>(false);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => e.preventDefault();
-    document.addEventListener("contextmenu", handler);
-    return () => document.removeEventListener("contextmenu", handler);
+    const onContextMenu = (e: MouseEvent) => e.preventDefault();
+
+    // Capture-phase keydown: opens the researcher quit gate and suppresses
+    // browser/OS escape shortcuts before the task-level handlers see them.
+    const onKeyDown = (e: KeyboardEvent) => {
+      // Researcher-only save-and-quit gate: Ctrl+Shift+Q.
+      if (e.ctrlKey && e.shiftKey && (e.key === "Q" || e.key === "q")) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowAdminQuit(true);
+        return;
+      }
+      if (isBlockedShortcut(e)) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("contextmenu", onContextMenu);
+    window.addEventListener("keydown", onKeyDown, true); // capture phase
+    return () => {
+      document.removeEventListener("contextmenu", onContextMenu);
+      window.removeEventListener("keydown", onKeyDown, true);
+    };
   }, []);
+
+  // Flush any in-memory data to disk, then quit. Triggered only from the
+  // researcher AdminQuitModal.
+  const handleConfirmQuit = async () => {
+    try {
+      await flushAll();
+    } catch (err) {
+      console.error("Flush before quit failed:", err);
+    }
+    try {
+      await invoke("exit_app");
+    } catch (err) {
+      console.error("exit_app failed:", err);
+    }
+  };
 
   const handleFormSubmit = async () => {
     try {
@@ -87,6 +126,12 @@ function App() {
 
   return (
     <div className="w-screen bg-black cursor-auto">
+      <AdminQuitModal
+        isOpen={showAdminQuit}
+        onCancel={() => setShowAdminQuit(false)}
+        onConfirm={handleConfirmQuit}
+      />
+
       {csvError && (
         <ErrorBanner message={csvError} onDismiss={() => setCsvError(null)} />
       )}

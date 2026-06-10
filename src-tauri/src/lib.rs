@@ -59,6 +59,15 @@ response,trialNumber,softwareVersion"
     Ok(())
 }
 
+// Exits the process. The frontend flushes any buffered data before calling this,
+// so it does no saving itself. This is the only sanctioned way to quit the app
+// (triggered by the researcher save-and-quit gate); it uses app.exit, which
+// bypasses the CloseRequested guard installed in `run`.
+#[tauri::command]
+fn exit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
 // Creates the session folder and returns its absolute path.
 #[tauri::command]
 fn setup_rating_directory(
@@ -88,12 +97,23 @@ pub fn run() {
             use tauri::Manager;
             let window = app.get_webview_window("main").unwrap();
             window.set_fullscreen(true).unwrap();
+            let _ = window.set_always_on_top(true);
+
+            // Block all OS-level window close attempts (Alt+F4, window close
+            // button). The only sanctioned exit is the researcher save-and-quit
+            // flow, which calls `exit_app` (app.exit) and bypasses this guard.
+            window.on_window_event(|event| {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                    api.prevent_close();
+                }
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             write_csv_ratings,
             write_csv_transitions,
-            setup_rating_directory
+            setup_rating_directory,
+            exit_app
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

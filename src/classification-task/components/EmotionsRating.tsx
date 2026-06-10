@@ -16,8 +16,6 @@ interface TransitionRating {
 
 interface EmotionsRatingProps {
   ratingPerson: string;
-  personIndex: number;
-  totalPersons: number;
   emotionTransitions: Transition[];
   onTransitionSubmit?: (initial: string, final: string, rating: number) => void;
   onAllTransitionsComplete?: (ratings: TransitionRating[]) => void;
@@ -34,8 +32,6 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 
 export default function EmotionsRating({
   ratingPerson,
-  personIndex,
-  totalPersons,
   emotionTransitions,
   onTransitionSubmit,
   onAllTransitionsComplete,
@@ -114,14 +110,12 @@ export default function EmotionsRating({
   }
 
   const current = shuffledTransitions[currentTransitionIndex];
-  const progressLabel = `Person ${personIndex + 1} of ${totalPersons}  ·  Transition ${currentTransitionIndex + 1} of ${shuffledTransitions.length}`;
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black overflow-hidden">
       <div className="max-w-4xl w-full mx-auto px-8">
-        {/* Progress indicator — added per review feedback */}
-        <p className="text-gray-400 text-sm text-center mb-6 font-mono">{progressLabel}</p>
-
+        {/* Progress indicator intentionally removed: showing remaining count led
+            participants to rush to finish, degrading data quality. */}
         <p className="text-white text-2xl mb-16">
           Please rate the likelihood (0%–100%) of the following emotion transition for{" "}
           <strong>{ratingPerson}</strong>:

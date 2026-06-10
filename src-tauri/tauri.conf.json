@@ -13,7 +13,14 @@
     "windows": [
       {
         "fullscreen": true,
-        "title": "PPS Study"
+        "title": "PPS Study",
+        "alwaysOnTop": true,
+        "decorations": false,
+        "resizable": false,
+        "maximizable": false,
+        "minimizable": false,
+        "closable": false,
+        "skipTaskbar": true
       }
     ],
     "security": {

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type { FormData } from "../App";
 import { csvEscape } from "../utils/csv";
+import { registerFlush } from "../utils/flushRegistry";
 
 import VideoPlayer from "./VideoPlayer";
 import Slider from "./Slider";
@@ -231,6 +232,20 @@ function DyadTaskMain({
       el.removeEventListener("timeupdate", handleTimeUpdate);
     };
   }, [videoSrc, csvFilePath, videoEnded, callOnComplete, handleCsvError]);
+
+  // Register a flush so the researcher save-and-quit path writes any buffered
+  // slider samples to disk before the app exits (the sampler only auto-flushes
+  // every 15 s, so up to ~15 s of samples live only in memory at any moment).
+  useEffect(() => {
+    const unregister = registerFlush(async () => {
+      const buffer = sampleBufferRef.current;
+      if (buffer.length > 0) {
+        const toFlush = buffer.splice(0, buffer.length);
+        await invoke("write_csv_ratings", { path: csvFilePath, contents: toFlush });
+      }
+    });
+    return unregister;
+  }, [csvFilePath]);
 
   // Play/pause based on overlay state.
   useEffect(() => {
