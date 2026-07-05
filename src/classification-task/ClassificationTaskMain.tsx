@@ -18,6 +18,7 @@ import Expressivity from "./Expressivity";
 import StudyFeedback from "./StudyFeedback";
 import Autism from "./Autism";
 import type { ClassificationStepData } from "./types";
+import { shuffle } from "../utils/shuffle";
 
 const SOFTWARE_VERSION = "2.0.0";
 
@@ -104,10 +105,8 @@ function ClassificationTaskMain({
   const RATING_PEOPLE = ["yourself", "your partner", "an average UW-Madison student"];
 
   useEffect(() => {
-    setShuffledPeople([...RATING_PEOPLE].sort(() => Math.random() - 0.5));
-    const blockRandomized = ["loneliness", "socialConnectedness", "expressivity"].sort(
-      () => Math.random() - 0.5
-    );
+    setShuffledPeople(shuffle(RATING_PEOPLE));
+    const blockRandomized = shuffle(["loneliness", "socialConnectedness", "expressivity"]);
     setFormOrder([
       "scenarios",
       "selfFrequency",
@@ -325,28 +324,29 @@ function ClassificationTaskMain({
           <>
             {showTransition ? (
               <div className="min-h-screen w-full flex flex-col justify-center items-center bg-black overflow-hidden">
-                <div className="max-w-4xl mx-auto">
+                <div className=" max-w-4xl mx-auto">
                   <h1 className="text-white text-2xl">Phase Complete!</h1>
-                  <p className="text-white text-2xl pt-20">
+                  <p className="text-white text-2xl pt-32">
                     You have completed all ratings for{" "}
-                    <strong>{shuffledPeople[currentPersonIndex]}</strong>.
+                    {shuffledPeople[currentPersonIndex]}.
                   </p>
-                  <p className="text-white text-2xl pt-20">
-                    You will now be rating <strong>{shuffledPeople[currentPersonIndex + 1]}</strong>.
+                  <p className="text-white text-2xl pt-32">
+                    You will now be rating{" "}
+                    {shuffledPeople[currentPersonIndex + 1]}.
                   </p>
-                  <PressKeyPrompt keyLabel="Space" text="to continue to the next person" />
+                  <div className="">
+                    <PressKeyPrompt keyLabel="Space" text="to continue to the next person" />
+                  </div>
                 </div>
               </div>
             ) : shuffledPeople.length > 0 ? (
-              <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black overflow-hidden">
-                <ScenarioRating
-                  key={currentPersonIndex}
-                  scenarios={SCENARIOS}
-                  targetPhrase={targetPhrase(shuffledPeople[currentPersonIndex])}
-                  onScenarioComplete={handleScenarioComplete}
-                  onAllScenariosComplete={handleAllScenariosComplete}
-                />
-              </div>
+              <ScenarioRating
+                key={currentPersonIndex}
+                scenarios={SCENARIOS}
+                targetPhrase={targetPhrase(shuffledPeople[currentPersonIndex])}
+                onScenarioComplete={handleScenarioComplete}
+                onAllScenariosComplete={handleAllScenariosComplete}
+              />
             ) : (
               <div className="min-h-screen w-full flex items-center justify-center bg-black">
                 <h1 className="text-white text-4xl font-bold">Loading...</h1>

@@ -5,6 +5,11 @@ import DyadTaskMain from "./dyad-task/DyadTaskMain";
 import ClassificationTaskMain from "./classification-task/ClassificationTaskMain";
 import ErrorBanner from "./components/ErrorBanner";
 import AdminQuitModal from "./components/AdminQuitModal";
+import SignIn from "./roundrobin/SignIn";
+import Welcome from "./roundrobin/Welcome";
+import AdminDashboard from "./roundrobin/AdminDashboard";
+import { loadData, saveData, signIn as rrSignIn } from "./roundrobin/store";
+import type { RRData, RRParticipant } from "./roundrobin/store";
 import { flushAll } from "./utils/flushRegistry";
 import { isBlockedShortcut } from "./utils/lockdown";
 import { invoke } from "@tauri-apps/api/core";
@@ -41,6 +46,35 @@ function App() {
   const [taskOrder, setTaskOrder] = useState<number>(0);
   const [csvError, setCsvError] = useState<string | null>(null);
   const [showAdminQuit, setShowAdminQuit] = useState<boolean>(false);
+
+  // Round-robin check-in gate. The app opens on an email-only sign-in:
+  // participants get registered into a random group of 5 and continue into the
+  // study; admin@admin opens the researcher tracking dashboard instead.
+  const [stage, setStage] = useState<"signin" | "welcome" | "admin" | "study">("signin");
+  const [rrData, setRrData] = useState<RRData | null>(null);
+  const [rrParticipant, setRrParticipant] = useState<RRParticipant | null>(null);
+  const [rrIsNew, setRrIsNew] = useState<boolean>(false);
+
+  useEffect(() => {
+    void loadData().then(setRrData);
+  }, []);
+
+  const persistRr = (data: RRData) => {
+    setRrData(data);
+    void saveData(data).catch((err) => {
+      console.error("Round-robin save failed:", err);
+      setCsvError(`Round-robin save failed: ${err}`);
+    });
+  };
+
+  const handleParticipantSignIn = (email: string) => {
+    const base = rrData ?? { version: 1 as const, groupSize: 5, participants: [], meetings: {} };
+    const result = rrSignIn(base, email);
+    if (result.isNew) persistRr(result.data);
+    setRrParticipant(result.participant);
+    setRrIsNew(result.isNew);
+    setStage("welcome");
+  };
 
   useEffect(() => {
     const onContextMenu = (e: MouseEvent) => e.preventDefault();
@@ -136,7 +170,25 @@ function App() {
         <ErrorBanner message={csvError} onDismiss={() => setCsvError(null)} />
       )}
 
-      {allTasksCompleted ? (
+      {stage === "signin" ? (
+        <SignIn
+          onParticipant={handleParticipantSignIn}
+          onAdmin={() => setStage("admin")}
+        />
+      ) : stage === "admin" ? (
+        <AdminDashboard
+          data={rrData ?? { version: 1, groupSize: 5, participants: [], meetings: {} }}
+          onChange={persistRr}
+          onExit={() => setStage("signin")}
+        />
+      ) : stage === "welcome" && rrData && rrParticipant ? (
+        <Welcome
+          data={rrData}
+          participant={rrParticipant}
+          isNew={rrIsNew}
+          onContinue={() => setStage("study")}
+        />
+      ) : allTasksCompleted ? (
         <div className="h-screen w-full flex flex-col items-center justify-center">
           <p className="text-white text-2xl text-center max-w-2xl px-8">
             Please alert your researcher that you are finished.

@@ -15,9 +15,9 @@ const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(
               type="file"
               accept=".mp4,.mov"
               onChange={onFileChange}
-              className="px-4 py-2 border border-white bg-black text-white cursor-pointer hover:bg-gray-800 rounded"
+              className="px-4 py-2 border border-white bg-black text-white cursor-pointer hover:bg-gray-800"
             />
-            <p className="mt-4 text-white text-lg">Select a video file to begin</p>
+            <p className="mt-4 text-white">Select a video file to begin</p>
           </div>
         )}
         {videoSrc && (

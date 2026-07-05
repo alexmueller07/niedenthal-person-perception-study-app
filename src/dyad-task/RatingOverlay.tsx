@@ -24,7 +24,7 @@ function RatingOverlay({
 }: RatingOverlayProps) {
   return (
     <div className="h-full w-full flex flex-col items-center justify-center bg-black cursor-auto">
-      <div className="max-w-2xl mx-auto px-8">
+      <div className=" max-w-2xl mx-auto px-8">
         <h1 className="text-white text-2xl mb-8">
           Please use the box below to write about how{" "}
           {currentRatingTarget === "self" ? "YOU were" : "YOUR PARTNER was"}{" "}
@@ -41,7 +41,7 @@ function RatingOverlay({
           />
 
           <div>
-            <label className="block text-white text-2xl mb-6 mt-16">
+            <label className="block text-white text-2xl mb-6 mt-32">
               To what extent do you feel that{" "}
               {currentRatingTarget === "self" ? "YOUR PARTNER " : "YOU "}{" "}
               elicited these feelings in{" "}
@@ -67,7 +67,7 @@ function RatingOverlay({
               </div>
               <span className="text-white text-xl">Very</span>
             </div>
-            <p className="text-center text-white text-lg mt-4">
+            <p className="text-center text-white text-lg mt-6">
               Selected: {numberScale ?? "—"}
             </p>
           </div>

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import MatrixQuestion from "../components/MatrixQuestion";
-import ConfirmationModal from "../components/ConfirmationModal";
+import QuestionnairePage from "../components/QuestionnairePage";
 import type { ClassificationTaskProps } from "./types";
+import { shuffle } from "../utils/shuffle";
 
 const ORIGINAL_QUESTIONS = [
   'How often do you feel that you are "in tune" with the people around you?',
@@ -28,22 +29,24 @@ const ORIGINAL_QUESTIONS = [
 
 export default function Loneliness({ onContinue }: ClassificationTaskProps) {
   const [matrixSelections, setMatrixSelections] = useState<{ [key: number]: number }>({});
-  const [showConfirmationModal, setShowConfirmationModal] = useState<boolean>(false);
   const [shuffledQuestions, setShuffledQuestions] = useState<string[]>([]);
 
   useEffect(() => {
-    setShuffledQuestions([...ORIGINAL_QUESTIONS].sort(() => Math.random() - 0.5));
+    setShuffledQuestions(shuffle(ORIGINAL_QUESTIONS));
   }, []);
 
-  const isFormValid = () =>
+  const isFormValid =
     Object.keys(matrixSelections).length === ORIGINAL_QUESTIONS.length &&
     Object.values(matrixSelections).every((s) => s != null);
 
-  const getData = () => ({ matrixSelections, order: shuffledQuestions });
-
   return (
-    <div className="min-h-full w-full flex flex-col items-center justify-center bg-black">
-      <div className="bg-black border p-8 text-center max-w-7xl mx-auto flex-1 flex flex-col justify-center">
+    <QuestionnairePage
+      title="Indicate how often each statement applies to you."
+      valid={isFormValid}
+      onSubmit={() => onContinue?.({ matrixSelections, order: shuffledQuestions })}
+    >
+      <div className="mt-6">
+        <div className="grid grid-cols-1 gap-4 mb-6 max-w-2xl mx-auto"></div>
         <MatrixQuestion
           rows={shuffledQuestions}
           columns={["Never", "Rarely", "Sometimes", "Always"]}
@@ -53,20 +56,6 @@ export default function Loneliness({ onContinue }: ClassificationTaskProps) {
           selections={matrixSelections}
         />
       </div>
-      <div className="w-full flex justify-center pb-8">
-        <button
-          type="button"
-          onClick={() => { if (isFormValid()) { onContinue?.(getData()); } else { setShowConfirmationModal(true); } }}
-          className="px-8 py-3 rounded-lg font-semibold transition-colors bg-white text-black hover:bg-gray-200"
-        >
-          Continue
-        </button>
-      </div>
-      <ConfirmationModal
-        isOpen={showConfirmationModal}
-        onClose={() => setShowConfirmationModal(false)}
-        onConfirm={() => { setShowConfirmationModal(false); onContinue?.(getData()); }}
-      />
-    </div>
+    </QuestionnairePage>
   );
 }

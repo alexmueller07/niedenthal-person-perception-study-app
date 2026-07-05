@@ -16,7 +16,7 @@ function TransitionScreen({ ratingTarget, onContinue }: TransitionScreenProps) {
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-black z-20">
       <div className="bg-black border p-8 max-w-2xl mx-auto">
-        <h1 className="text-white text-2xl mb-20">
+        <h1 className="text-white text-2xl mb-32">
           The next part is concerned with{" "}
           {ratingTarget === "self"
             ? "YOUR FEELINGS "

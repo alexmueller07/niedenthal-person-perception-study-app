@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import type { Scenario } from "../scenarios";
+import { shuffle } from "../../utils/shuffle";
 
 export interface EmotionRating {
   emotion: string;
@@ -22,16 +23,9 @@ interface ScenarioRatingProps {
 
 const SCALE_POINTS = [1, 2, 3, 4, 5, 6, 7];
 
-const shuffle = <T,>(array: T[]): T[] => {
-  const out = [...array];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-};
-
-// A 1-7 rating row with "Not at all" / "Extremely" anchors.
+// A 1-7 rating row: small circular "bubbles" with the number centered inside,
+// and the "Not at all" / "Extremely" anchors placed below the endpoints
+// (outside the bubbles).
 function ScaleSelect({
   value,
   onSelect,
@@ -40,24 +34,27 @@ function ScaleSelect({
   onSelect: (v: number) => void;
 }) {
   return (
-    <div className="flex items-end justify-center gap-4 mt-3">
-      {SCALE_POINTS.map((point) => (
-        <button
-          key={point}
-          type="button"
-          onClick={() => onSelect(point)}
-          className={`flex flex-col items-center w-16 px-2 py-2 rounded-lg border transition-colors ${
-            value === point
-              ? "bg-white text-black border-white"
-              : "bg-black text-white border-gray-500 hover:border-white"
-          }`}
-        >
-          <span className="text-xl font-semibold">{point}</span>
-          <span className="text-xs mt-1 h-4">
-            {point === 1 ? "Not at all" : point === 7 ? "Extremely" : ""}
-          </span>
-        </button>
-      ))}
+    <div className="inline-flex flex-col items-stretch">
+      <div className="flex items-center justify-center gap-3">
+        {SCALE_POINTS.map((point) => (
+          <button
+            key={point}
+            type="button"
+            onClick={() => onSelect(point)}
+            className={`flex items-center justify-center w-9 h-9 rounded-full border text-sm font-semibold leading-none transition-colors ${
+              value === point
+                ? "bg-white text-black border-white"
+                : "bg-black text-white border-gray-500 hover:border-white"
+            }`}
+          >
+            {point}
+          </button>
+        ))}
+      </div>
+      <div className="flex justify-between mt-1">
+        <span className="text-white text-sm">Not at all</span>
+        <span className="text-white text-sm">Extremely</span>
+      </div>
     </div>
   );
 }
@@ -126,35 +123,49 @@ export default function ScenarioRating({
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black py-12 overflow-y-auto">
-      <div className="max-w-3xl w-full mx-auto px-8">
-        <p className="text-gray-400 text-lg mb-4">In this part of the survey, you will read a series of situations.</p>
+    <div className="min-h-full w-full flex flex-col bg-black pb-24">
+      {/* Instruction header — pinned to the top while the page scrolls. */}
+      <div className="sticky top-0 z-40 w-full bg-black border-b border-white px-8 py-4">
+        <h2 className="text-white text-2xl font-bold text-center">
+          In this part of the survey, you will read a series of situations.
+        </h2>
+      </div>
 
-        <p className="text-white text-2xl mb-12 leading-relaxed">{current.text}</p>
+      <div className="flex-1 flex flex-col items-center justify-center px-8 py-8 max-w-3xl w-full mx-auto">
+        <div className="text-center mb-10">
+          <p className="text-white text-2xl leading-relaxed">{current.text}</p>
+        </div>
 
-        <div className="space-y-12">
+        <div className="flex flex-col items-center gap-6 w-full">
           {orderedEmotions.map((emotion) => (
-            <div key={emotion} className="border-t border-gray-700 pt-8">
-              <p className="text-white text-xl mb-1">
+            <div key={emotion} className="flex flex-col items-center gap-2">
+              <p className="text-white text-2xl text-center">
                 Rate the degree to which {targetPhrase} would feel <strong>{emotion}</strong>.
               </p>
-              <ScaleSelect value={intensity[emotion]} onSelect={(v) => setIntensity((p) => ({ ...p, [emotion]: v }))} />
+              <ScaleSelect
+                value={intensity[emotion]}
+                onSelect={(v) => setIntensity((p) => ({ ...p, [emotion]: v }))}
+              />
 
-              <p className="text-white text-xl mt-8 mb-1">How confident are you about your rating?</p>
-              <ScaleSelect value={confidence[emotion]} onSelect={(v) => setConfidence((p) => ({ ...p, [emotion]: v }))} />
+              <p className="text-white text-lg text-center mt-1">How confident are you about your rating?</p>
+              <ScaleSelect
+                value={confidence[emotion]}
+                onSelect={(v) => setConfidence((p) => ({ ...p, [emotion]: v }))}
+              />
             </div>
           ))}
         </div>
+      </div>
 
-        <div className="flex justify-center mt-10">
-          <button
-            type="button"
-            onClick={handleNext}
-            className="px-10 py-3 rounded-lg font-semibold bg-white text-black hover:bg-gray-200 transition-colors"
-          >
-            Next
-          </button>
-        </div>
+      {/* Next — frozen in the bottom-right corner. */}
+      <div className="fixed bottom-8 right-8 z-40">
+        <button
+          type="button"
+          onClick={handleNext}
+          className="px-8 py-3 rounded-lg font-semibold transition-colors bg-white text-black hover:bg-gray-200"
+        >
+          Next
+        </button>
       </div>
 
       <ConfirmationModal

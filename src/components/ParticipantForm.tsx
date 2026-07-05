@@ -1,6 +1,10 @@
 import { useState } from "react";
 import type { FormData } from "../App";
 
+// Visuals match Suhaas's original form exactly (text-4xl heading, text-lg
+// labels, p-3 inputs, full-width bordered Start button). Our filename-safety
+// validation for ID fields is kept — error text only appears after a failed
+// submit, so the untouched form is pixel-identical to the original.
 interface ParticipantFormProps {
   formData: FormData;
   onChange: (field: string, value: string) => void;
@@ -17,7 +21,7 @@ function validateId(value: string): string | null {
   return null;
 }
 
-export default function ParticipantForm({ formData, onChange, onSubmit }: ParticipantFormProps) {
+function ParticipantForm({ formData, onChange, onSubmit }: ParticipantFormProps) {
   const [idErrors, setIdErrors] = useState<{ [key: string]: string | null }>({});
   const [attempted, setAttempted] = useState(false);
 
@@ -45,7 +49,10 @@ export default function ParticipantForm({ formData, onChange, onSubmit }: Partic
 
   const handleSubmit = () => {
     setAttempted(true);
-    if (!allRequiredFilled) return;
+    if (!allRequiredFilled) {
+      alert("Please fill in all fields.");
+      return;
+    }
     if (!validate()) return;
     onSubmit();
   };
@@ -58,22 +65,20 @@ export default function ParticipantForm({ formData, onChange, onSubmit }: Partic
   };
 
   const inputClass =
-    "w-full p-2.5 text-white bg-gray-800 border border-white rounded-lg focus:outline-none focus:border-blue-400 text-base";
-  const labelClass = "block text-white text-base mb-1";
-  const errorClass = "text-red-400 text-xs mt-1";
+    "w-full p-3 text-white bg-gray-800 border border-white rounded-lg focus:outline-none focus:border-blue-400";
+  const errorClass = "text-red-400 text-xs mt-1 text-left";
 
   return (
-    <div className="w-full h-screen flex flex-col items-center justify-center bg-black overflow-y-auto">
-      <div className="w-full max-w-2xl mx-auto px-8 py-6">
-        <h1 className="text-white text-3xl font-bold mb-6 text-center">
-          Please Enter the Participant's Information
+    <div className="w-full flex flex-col items-center justify-center bg-black cursor-auto overflow-hidden h-screen">
+      <div className="text-center max-w-2xl mx-auto px-8">
+        <h1 className="text-white text-4xl font-bold mb-8">
+          Please Enter the Particpant's Information
         </h1>
 
-        <div className="space-y-3">
-          {/* Row: Dyad ID + Participant ID */}
+        <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Dyad ID:</label>
+              <label className="block text-white text-lg mb-2">Dyad ID:</label>
               <input
                 autoComplete="off"
                 type="text"
@@ -83,8 +88,11 @@ export default function ParticipantForm({ formData, onChange, onSubmit }: Partic
               />
               {idErrors.dyadId && <p className={errorClass}>{idErrors.dyadId}</p>}
             </div>
+
             <div>
-              <label className={labelClass}>Participant ID:</label>
+              <label className="block text-white text-lg mb-2">
+                Participant ID:
+              </label>
               <input
                 autoComplete="off"
                 type="text"
@@ -96,10 +104,11 @@ export default function ParticipantForm({ formData, onChange, onSubmit }: Partic
             </div>
           </div>
 
-          {/* Row: Partner ID + Subject Initials */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Partner ID:</label>
+              <label className="block text-white text-lg mb-2">
+                Partner ID:
+              </label>
               <input
                 autoComplete="off"
                 type="text"
@@ -109,8 +118,11 @@ export default function ParticipantForm({ formData, onChange, onSubmit }: Partic
               />
               {idErrors.partnerId && <p className={errorClass}>{idErrors.partnerId}</p>}
             </div>
+
             <div>
-              <label className={labelClass}>Subject Initials:</label>
+              <label className="block text-white text-lg mb-2">
+                Subject Initials:
+              </label>
               <input
                 autoComplete="off"
                 type="text"
@@ -122,34 +134,39 @@ export default function ParticipantForm({ formData, onChange, onSubmit }: Partic
             </div>
           </div>
 
-          {/* Computer L/R toggle */}
           <div>
-            <label className={labelClass}>Computer (L/R):</label>
-            <div className="flex space-x-3">
-              {(["Left", "Right"] as const).map((side) => (
-                <button
-                  key={side}
-                  type="button"
-                  onClick={() => onChange("computer", side)}
-                  className={`flex-1 px-4 py-2.5 border border-white rounded-lg transition-colors text-base ${
-                    formData.computer === side
-                      ? "bg-white text-black font-semibold"
-                      : "bg-gray-800 hover:bg-gray-700 text-white"
-                  }`}
-                >
-                  {side}
-                </button>
-              ))}
+            <label className="block text-white text-lg mb-2">
+              Computer (L/R):
+            </label>
+            <div className="flex space-x-4">
+              <button
+                type="button"
+                onClick={() => onChange("computer", "Left")}
+                className={`flex-1 px-4 py-3 border border-white rounded-lg transition-colors ${
+                  formData.computer === "Left"
+                    ? "bg-white text-black"
+                    : "bg-gray-800 hover:bg-gray-700 text-white"
+                }`}
+              >
+                Left
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange("computer", "Right")}
+                className={`flex-1 px-4 py-3 border border-white rounded-lg transition-colors ${
+                  formData.computer === "Right"
+                    ? "bg-white text-black"
+                    : "bg-gray-800 hover:bg-gray-700 text-white"
+                }`}
+              >
+                Right
+              </button>
             </div>
-            {attempted && !formData.computer && (
-              <p className={errorClass}>Please select Left or Right</p>
-            )}
           </div>
 
-          {/* Row: RA Name + Session Time */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>RA Name:</label>
+              <label className="block text-white text-lg mb-2">RA Name:</label>
               <input
                 autoComplete="off"
                 type="text"
@@ -157,43 +174,48 @@ export default function ParticipantForm({ formData, onChange, onSubmit }: Partic
                 onChange={(e) => onChange("raName", e.target.value)}
                 className={inputClass}
               />
-              {attempted && !formData.raName && <p className={errorClass}>Required</p>}
             </div>
+
             <div>
-              <label className={labelClass}>Session Time:</label>
+              <label className="block text-white text-lg mb-2">
+                Session Time:
+              </label>
               <input
-                type="time"
+                autoComplete="off"
+                type="text"
                 value={formData.sessionTime}
                 onChange={(e) => onChange("sessionTime", e.target.value)}
-                className={`${inputClass} [color-scheme:dark]`}
+                className={inputClass}
               />
-              {attempted && !formData.sessionTime && <p className={errorClass}>Required</p>}
             </div>
           </div>
 
-          {/* Session Date */}
           <div>
-            <label className={labelClass}>Session Date:</label>
+            <label className="block text-white text-lg mb-2">
+              Session Date:
+            </label>
             <input
-              type="date"
+              autoComplete="off"
+              type="text"
               value={formData.sessionDate}
               onChange={(e) => onChange("sessionDate", e.target.value)}
-              className={`${inputClass} [color-scheme:dark]`}
+              className={inputClass}
             />
-            {attempted && !formData.sessionDate && <p className={errorClass}>Required</p>}
           </div>
 
-          {/* Save Folder */}
           <div>
-            <label className={labelClass}>Save Folder:</label>
+            <label className="block text-white text-lg mb-2">
+              Save Folder:
+            </label>
             <div className="flex space-x-2">
               <input
                 autoComplete="off"
                 type="text"
                 value={formData.saveFolder}
-                readOnly
+                onChange={(e) => onChange("saveFolder", e.target.value)}
                 placeholder="Select folder to save ratings..."
-                className={`flex-1 ${inputClass} cursor-default`}
+                className="flex-1 p-3 text-white bg-gray-800 border border-white rounded-lg focus:outline-none focus:border-blue-400"
+                readOnly
               />
               <button
                 type="button"
@@ -204,25 +226,23 @@ export default function ParticipantForm({ formData, onChange, onSubmit }: Partic
                       directory: true,
                       title: "Select folder to save ratings",
                     });
-                    if (selected) onChange("saveFolder", selected as string);
+                    if (selected) {
+                      onChange("saveFolder", selected as string);
+                    }
                   } catch (error) {
                     console.error("Error selecting folder:", error);
                   }
                 }}
-                className="px-4 py-2.5 text-white border border-white rounded-lg hover:bg-gray-700 transition-colors text-base"
+                className="px-4 py-3 text-white border border-white rounded-lg hover:bg-gray-700 transition-colors"
               >
                 Browse
               </button>
             </div>
-            {attempted && !formData.saveFolder && (
-              <p className={errorClass}>Please select a save folder</p>
-            )}
           </div>
 
-          {/* Submit */}
           <button
             onClick={handleSubmit}
-            className="w-full px-8 py-3.5 text-white text-xl border border-white bg-black hover:bg-gray-800 transition-colors rounded mt-2 font-semibold"
+            className="w-full px-8 py-4 text-white text-xl border border-white bg-black hover:bg-gray-800 transition-colors mt-6"
           >
             Start Session
           </button>
@@ -231,3 +251,5 @@ export default function ParticipantForm({ formData, onChange, onSubmit }: Partic
     </div>
   );
 }
+
+export default ParticipantForm;

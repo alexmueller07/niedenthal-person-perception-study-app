@@ -53,10 +53,10 @@ function Instructions({
         </button>
       )}
 
-      <div className="relative pt-28 w-full max-w-2xl mx-auto px-8">
+      <div className="relative pt-32 w-full max-w-2xl mx-auto px-8">
         <div className="space-y-6">
           {visible.map((item, idx) => (
-            <div key={item.originalIndex} className="min-h-[100px] flex flex-col justify-center">
+            <div key={item.originalIndex} className="min-h-[120px] flex flex-col justify-center">
               <p
                 className="text-2xl leading-relaxed"
                 style={{ color: idx <= instructionIndex ? "white" : "black" }}
@@ -68,7 +68,7 @@ function Instructions({
         </div>
       </div>
 
-      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-8">
+      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-8">
         <PressKeyPrompt />
       </div>
     </div>
