@@ -119,14 +119,52 @@ fn setup_rating_directory(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    use tauri_plugin_global_shortcut::{Code, Modifiers, ShortcutState};
+
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        // Researcher save-and-quit combo registered at the OS level. The old
+        // webview keydown listener only fired when the page had keyboard
+        // focus, which a fullscreen kiosk often does not — that is why
+        // Ctrl+Shift+Q felt unreliable. A global shortcut fires regardless of
+        // focus; the frontend keydown handler remains as a fallback.
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app, shortcut, event| {
+                    if event.state == ShortcutState::Pressed
+                        && (shortcut.matches(Modifiers::CONTROL | Modifiers::SHIFT, Code::KeyQ)
+                            || shortcut.matches(Modifiers::SUPER | Modifiers::SHIFT, Code::KeyQ))
+                    {
+                        use tauri::Emitter;
+                        let _ = app.emit("admin-quit", ());
+                    }
+                })
+                .build(),
+        )
         .setup(|app| {
             let scope = app.fs_scope();
             let _ = scope.allow_directory("/", false);
             use tauri::Manager;
+
+            // Register Ctrl+Shift+Q (and Cmd+Shift+Q on macOS). Failure is
+            // non-fatal — the in-page keydown listener still works.
+            {
+                use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
+                let ctrl = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyQ);
+                if let Err(e) = app.global_shortcut().register(ctrl) {
+                    eprintln!("global shortcut (ctrl+shift+q) registration failed: {e}");
+                }
+                #[cfg(target_os = "macos")]
+                {
+                    let cmd = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyQ);
+                    if let Err(e) = app.global_shortcut().register(cmd) {
+                        eprintln!("global shortcut (cmd+shift+q) registration failed: {e}");
+                    }
+                }
+            }
+
             let window = app.get_webview_window("main").unwrap();
             window.set_fullscreen(true).unwrap();
             let _ = window.set_always_on_top(true);
