@@ -68,6 +68,38 @@ fn exit_app(app: tauri::AppHandle) {
     app.exit(0);
 }
 
+// ---- Round-robin tracking store ----
+//
+// One JSON file in the app-data directory holds the cross-day round-robin
+// state (participants, groups, which pairs have met). It contains participant
+// emails, so it must stay on the lab machine / UW Research Drive and is never
+// part of the repo. The frontend owns the schema; these commands only move
+// bytes.
+
+fn roundrobin_path(app: &tauri::AppHandle) -> Result<std::path::PathBuf, String> {
+    use tauri::Manager;
+    let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    Ok(dir.join("roundrobin.json"))
+}
+
+// Returns the stored JSON, or "" when no store exists yet.
+#[tauri::command]
+fn load_roundrobin(app: tauri::AppHandle) -> Result<String, String> {
+    let path = roundrobin_path(&app)?;
+    if !path.exists() {
+        return Ok(String::new());
+    }
+    fs::read_to_string(&path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn save_roundrobin(app: tauri::AppHandle, contents: String) -> Result<String, String> {
+    let path = roundrobin_path(&app)?;
+    fs::write(&path, contents).map_err(|e| e.to_string())?;
+    Ok(path.to_string_lossy().to_string())
+}
+
 // Creates the session folder and returns its absolute path.
 #[tauri::command]
 fn setup_rating_directory(
@@ -113,7 +145,9 @@ pub fn run() {
             write_csv_ratings,
             write_csv_transitions,
             setup_rating_directory,
-            exit_app
+            exit_app,
+            load_roundrobin,
+            save_roundrobin
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
