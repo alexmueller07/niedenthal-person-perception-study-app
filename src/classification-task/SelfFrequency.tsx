@@ -30,6 +30,7 @@ export default function SelfFrequency({ onContinue }: ClassificationTaskProps) {
       confirmMessage="There are unanswered questions on this page. Would you like to continue?"
       confirmText="Continue"
       cancelText="Close"
+      frameClassName="bg-black border p-8 w-10/12 mx-auto flex-1 flex flex-col justify-center"
     >
       <MatrixSlider
         leftLabel="Never"

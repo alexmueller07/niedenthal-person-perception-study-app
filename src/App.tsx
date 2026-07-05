@@ -13,6 +13,7 @@ import type { RRData, RRParticipant } from "./roundrobin/store";
 import { flushAll } from "./utils/flushRegistry";
 import { isBlockedShortcut } from "./utils/lockdown";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
 export interface FormData {
   dyadId: string;
@@ -96,9 +97,22 @@ function App() {
 
     document.addEventListener("contextmenu", onContextMenu);
     window.addEventListener("keydown", onKeyDown, true); // capture phase
+
+    // Primary path for Ctrl+Shift+Q: an OS-level global shortcut registered in
+    // Rust. It fires even when the webview does not have keyboard focus (the
+    // reason the keydown-only version was unreliable). The keydown listener
+    // above stays as a fallback and for browser dev.
+    let unlistenQuit: (() => void) | null = null;
+    if ("__TAURI_INTERNALS__" in window) {
+      void listen("admin-quit", () => setShowAdminQuit(true)).then((un) => {
+        unlistenQuit = un;
+      });
+    }
+
     return () => {
       document.removeEventListener("contextmenu", onContextMenu);
       window.removeEventListener("keydown", onKeyDown, true);
+      unlistenQuit?.();
     };
   }, []);
 
