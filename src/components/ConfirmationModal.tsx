@@ -20,8 +20,8 @@ export default function ConfirmationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-4 shadow-xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-4">
         {title && (
           <h2 className="text-white text-xl font-bold mb-4">{title}</h2>
         )}
@@ -37,7 +37,7 @@ export default function ConfirmationModal({
           </button>
           <button
             onClick={onConfirm}
-            className="px-6 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors font-semibold"
+            className="px-6 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors"
           >
             {confirmText}
           </button>
