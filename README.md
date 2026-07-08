@@ -80,9 +80,9 @@ damaged", run this in Terminal and try again:
 xattr -dr com.apple.quarantine "/Applications/PPS Study.app"
 ```
 
-## For whoever hacks on this later (not needed to run it)
+## For whoever works on this later (not needed to run it)
 
-Dev machine needs Node 20+ and Rust (rustup, MSVC toolchain on Windows). Then:
+Dev machine needs certain base requirements and then:
 
 ```
 npm install
@@ -92,6 +92,6 @@ npm test               # unit tests
 ```
 
 That's everything. If anything acts weird, screenshot it and text or email me
-and I'll sort it out fast.
+and I'll sort it out.
 
 — Alex
