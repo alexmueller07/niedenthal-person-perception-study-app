@@ -38,17 +38,29 @@ The flow you'll see:
      keeps its group. They see their group number and how many partners they
      still have to meet, then press Continue.
    - Type **`admin@admin`** instead to open the **round-robin dashboard**: every
-     group, who has met whom, one-click "mark met" on any pair, and who's left.
-     This is where you track the between-day interview progress.
+     group, who has met whom, one-click "mark met" on any pair, who's left, and
+     a **live view of where every participant currently is in the app** — plus
+     anyone who has pressed the help button. See section 5.
 2. **Participant info form** — you (the RA) fill this in: IDs, computer side
    (Left/Right — this controls the rating order, so get it right), and the
    **save folder**. Point the save folder at the study folder on the **Research
    Drive** — participant data must not live anywhere else.
 3. **Dyad task** — it asks for the conversation video file (`.mp4`/`.mov`), then
    runs the continuous rating blocks automatically.
-4. **Questionnaires** — scenario ratings and all the questionnaire pages. The
-   question header stays pinned while the page scrolls and the Continue button
-   is always bottom-right.
+4. **Video task** — eight short clips. For each clip: a page where they watch it
+   (Continue stays greyed out until the clip has played all the way through),
+   then a page with six sliders — how strongly it evoked each of three feelings,
+   and how confident they are in each rating. They go through all eight clips
+   three times: once for themselves, once for their partner, once for an average
+   UW student. It ends with a page asking which clips they'd send to their
+   partner and which they'd pick for themselves.
+5. **Questionnaires** — all the questionnaire pages. The question header stays
+   pinned while the page scrolls and the Continue button is always bottom-right.
+
+Throughout, a small **"Need help?"** button sits in the bottom-left corner. If a
+participant presses it, it shows up in red on the dashboard. It's deliberately
+hidden during the conversation-rating video, because the mouse position *is* the
+data on that screen.
 
 ## 4. Getting out of the app
 
@@ -56,20 +68,40 @@ The flow you'll see:
 flushes any buffered data to disk before closing — never kill the app from
 Task Manager mid-session). This works no matter what screen the app is on.
 
-## 5. Where the data lands
+## 5. Two folders to set once per machine (sign in as `admin@admin`)
+
+The dashboard has a **"Folders on this machine"** box with two settings. Both are
+optional — with neither set the app still runs — but the study wants both.
+
+**Stimulus video folder.** The clips the video task plays. They are not inside
+the installer (they're big, and they're not ours to hand out), so point this at
+the clip library — the `mp4_noname` folder — on the Research Drive or a local
+copy of it. If you leave it empty, a build made on a dev machine falls back to
+eight clips bundled at build time; a build downloaded from GitHub Actions has
+none, and the video task will say a clip could not be loaded. **Set this before
+running a session.**
+
+**Shared tracking folder.** Where the round-robin file and the live progress
+files live. Point *every* lab machine at the same folder on the Research Drive
+and the dashboard shows every session as it runs, including help requests, from
+whichever machine you're sitting at. Leave it empty and each machine keeps its
+own private copy and can only see itself. Restart the app after changing it.
+
+## 6. Where the data lands
 
 | What | Where |
 |------|-------|
 | Continuous ratings | `ratings.csv` in the session folder you picked |
-| Questionnaire answers | `transitions.csv` in the same folder |
-| Round-robin tracking | `roundrobin.json` in the app's data folder on that machine (`%APPDATA%\com.wisc.pps-study`) |
+| Questionnaire + video-task answers | `transitions.csv` in the same folder |
+| Round-robin tracking | `roundrobin.json` in the shared tracking folder, or `%APPDATA%\com.wisc.pps-study` if you haven't set one |
+| Live progress / help requests | one small `p-*.json` per participant in a `progress` subfolder of the same place |
+| Folder settings | `settings.json`, always in `%APPDATA%\com.wisc.pps-study` on that machine |
 
-The round-robin file contains participant **emails**, so it stays on the lab
-machine / Research Drive — never copy it to a personal device (IRB 2020-1657).
-Heads-up: each lab machine keeps its own round-robin file, so do all check-ins
-on the same computer (or copy the file over) if you want one combined view.
+The round-robin and progress files contain participant **emails**, so they stay
+on the lab machine / Research Drive — never copy them to a personal device
+(IRB 2020-1657).
 
-## 6. Mac version (if you ever need it)
+## 7. Mac version (if you ever need it)
 
 Same Actions page, but pick the **"Build macOS app"** workflow and download
 **`pps-study-macos`** (a `.dmg`). It's unsigned, so the first time:
@@ -86,10 +118,22 @@ Dev machine needs Node 20+ and Rust (rustup, MSVC toolchain on Windows). Then:
 
 ```
 npm install
+npm run stimuli        # copy the demo clips out of the library into public/videos
 npm run tauri dev      # run in a dev window
 npm run tauri build    # build the installer (src-tauri/target/release/bundle/nsis/)
 npm test               # unit tests
 ```
+
+Stimulus clips are gitignored, so a fresh clone has none. `npm run stimuli`
+copies the ones the app needs out of `./mp4_noname` (or pass another folder:
+`npm run stimuli -- D:\clips`). Whatever ends up in `public/videos` is baked into
+that build as the fallback used when no stimulus folder is set on the dashboard.
+
+`npm run dev` also serves **http://localhost:1420/preview.html** — a dev-only
+screen picker that jumps straight to any page of the video task, the selection
+page, or the dashboard, and prints the rows that would go to `transitions.csv`.
+Useful for showing a screen to Randy without sitting through a whole session. It
+is not part of any build.
 
 That's everything. If anything acts weird, screenshot it and text or email me
 and I'll sort it out fast.

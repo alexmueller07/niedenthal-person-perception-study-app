@@ -1,5 +1,10 @@
 // Situational emotion-rating scenarios.
 //
+// RETIRED (2026-07-23), pending Randy: the video affective-response task in
+// src/video-task now occupies this slot in the flow. Nothing imports this file.
+// It is kept rather than deleted so the scenario task can be put back by
+// pointing ClassificationTaskMain's first formOrder entry at "scenarios" again.
+//
 // This task replaces the earlier emotion-transition ("how likely is X to become Y")
 // task. For each of three targets (yourself, your partner, an average UW-Madison
 // student), the participant reads each situation and rates, on a 1-7 scale

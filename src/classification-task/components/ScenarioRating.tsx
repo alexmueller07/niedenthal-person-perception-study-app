@@ -1,3 +1,6 @@
+// RETIRED (2026-07-23), pending Randy — see the note at the top of ../scenarios.ts.
+// The video affective-response task in src/video-task occupies this slot now.
+
 import { useState, useEffect, useMemo, useCallback } from "react";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import type { Scenario } from "../scenarios";

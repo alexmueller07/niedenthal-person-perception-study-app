@@ -1,15 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import ParticipantForm from "./components/ParticipantForm";
 import DyadTaskMain from "./dyad-task/DyadTaskMain";
 import ClassificationTaskMain from "./classification-task/ClassificationTaskMain";
 import ErrorBanner from "./components/ErrorBanner";
 import AdminQuitModal from "./components/AdminQuitModal";
+import HelpButton from "./components/HelpButton";
 import SignIn from "./roundrobin/SignIn";
 import Welcome from "./roundrobin/Welcome";
 import AdminDashboard from "./roundrobin/AdminDashboard";
 import { loadData, saveData, signIn as rrSignIn } from "./roundrobin/store";
 import type { RRData, RRParticipant } from "./roundrobin/store";
+import { isHelpOpen, loadProgress, mergeProgress, saveProgress } from "./roundrobin/progress";
+import type { RRProgress, StageKey } from "./roundrobin/progress";
 import { flushAll } from "./utils/flushRegistry";
 import { isBlockedShortcut } from "./utils/lockdown";
 import { invoke } from "@tauri-apps/api/core";
@@ -56,6 +59,16 @@ function App() {
   const [rrParticipant, setRrParticipant] = useState<RRParticipant | null>(null);
   const [rrIsNew, setRrIsNew] = useState<boolean>(false);
 
+  // Live progress for the researcher dashboard, written on every step change.
+  // Held in a ref rather than state: it is reported from inside task callbacks
+  // and nothing in this component renders from it, so keeping it out of the
+  // render cycle avoids re-rendering the running task on every trial.
+  const progressRef = useRef<RRProgress | null>(null);
+  const [helpPending, setHelpPending] = useState<boolean>(false);
+  // Cursor position is the measurement during the continuous rating, so the
+  // help button has to disappear while that runs — see DyadTaskMain.
+  const [cursorLocked, setCursorLocked] = useState<boolean>(false);
+
   useEffect(() => {
     void loadData().then(setRrData);
   }, []);
@@ -68,6 +81,49 @@ function App() {
     });
   };
 
+  const writeProgress = useCallback((email: string, patch: Partial<RRProgress>) => {
+    const next = mergeProgress(progressRef.current ?? undefined, email, patch);
+    progressRef.current = next;
+    // Progress tracking is a convenience for the researcher, never study data:
+    // a failed write is logged and dropped rather than interrupting a session.
+    void saveProgress(next).catch((err) => console.error("Progress save failed:", err));
+  }, []);
+
+  const reportProgress = useCallback(
+    (stage: StageKey, done: number, total: number, detail: string) => {
+      const email = rrParticipant?.email;
+      if (!email) return;
+      writeProgress(email, { stage, done, total, detail });
+    },
+    [rrParticipant, writeProgress]
+  );
+
+  const handleRequestHelp = () => {
+    const email = rrParticipant?.email;
+    if (!email) return;
+    setHelpPending(true);
+    writeProgress(email, {
+      helpRequestedAt: new Date().toISOString(),
+      helpResolvedAt: null,
+    });
+  };
+
+  // While a help request is outstanding, watch for the researcher clearing it
+  // so the participant's "researcher notified" notice goes away on its own.
+  useEffect(() => {
+    if (!helpPending || !rrParticipant) return;
+    const id = window.setInterval(() => {
+      void loadProgress().then((all) => {
+        const mine = all[rrParticipant.email];
+        if (mine && !isHelpOpen(mine)) {
+          progressRef.current = { ...(progressRef.current ?? mine), ...mine };
+          setHelpPending(false);
+        }
+      });
+    }, 5000);
+    return () => window.clearInterval(id);
+  }, [helpPending, rrParticipant]);
+
   const handleParticipantSignIn = (email: string) => {
     const base = rrData ?? { version: 1 as const, groupSize: 5, participants: [], meetings: {} };
     const result = rrSignIn(base, email);
@@ -75,6 +131,14 @@ function App() {
     setRrParticipant(result.participant);
     setRrIsNew(result.isNew);
     setStage("welcome");
+    writeProgress(result.participant.email, {
+      stage: "checkin",
+      done: 1,
+      total: 1,
+      detail: `Group ${result.participant.group}`,
+      helpRequestedAt: null,
+      helpResolvedAt: null,
+    });
   };
 
   useEffect(() => {
@@ -145,6 +209,7 @@ function App() {
       setClassificationCsvFilePath(`${basePath}/transitions.csv`);
       setSelectedTask("dyad");
       setTaskOrder(1);
+      reportProgress("dyad", 0, 4, "Instructions");
     } catch (error) {
       console.error("Error setting up directory:", error);
       alert("Error setting up file directory. Please check the save folder path and try again.");
@@ -159,11 +224,14 @@ function App() {
     setCompletedTasks((prev) => ({ ...prev, dyad: true }));
     setTaskOrder(2);
     setSelectedTask("classification");
+    setCursorLocked(false);
+    reportProgress("video", 0, 25, "Instructions");
   };
 
   const handleClassificationTaskComplete = () => {
     setCompletedTasks((prev) => ({ ...prev, classification: true }));
     setSelectedTask(null);
+    reportProgress("done", 1, 1, "Session complete");
   };
 
   const handleCsvError = (msg: string) => {
@@ -184,6 +252,12 @@ function App() {
         <ErrorBanner message={csvError} onDismiss={() => setCsvError(null)} />
       )}
 
+      {/* Participant help signal. Hidden during the continuous rating, where
+          moving the pointer to a corner would be recorded as a slider value. */}
+      {stage === "study" && rrParticipant && !cursorLocked && (
+        <HelpButton onRequestHelp={handleRequestHelp} pending={helpPending} />
+      )}
+
       {stage === "signin" ? (
         <SignIn
           onParticipant={handleParticipantSignIn}
@@ -193,6 +267,7 @@ function App() {
         <AdminDashboard
           data={rrData ?? { version: 1, groupSize: 5, participants: [], meetings: {} }}
           onChange={persistRr}
+          onRefresh={setRrData}
           onExit={() => setStage("signin")}
         />
       ) : stage === "welcome" && rrData && rrParticipant ? (
@@ -215,6 +290,8 @@ function App() {
           taskOrder={taskOrder}
           onComplete={handleDyadTaskComplete}
           onCsvError={handleCsvError}
+          onProgress={(done, total, detail) => reportProgress("dyad", done, total, detail)}
+          onCursorLock={setCursorLocked}
         />
       ) : selectedTask === "classification" ? (
         <ClassificationTaskMain
@@ -222,6 +299,9 @@ function App() {
           csvFilePath={classificationCsvFilePath}
           onComplete={handleClassificationTaskComplete}
           onCsvError={handleCsvError}
+          onProgress={(stage, done, total, detail) =>
+            reportProgress(stage, done, total, detail)
+          }
         />
       ) : (
         <ParticipantForm
