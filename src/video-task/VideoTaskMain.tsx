@@ -30,9 +30,10 @@ const RATING_PEOPLE = ["yourself", "your partner", "an average UW-Madison studen
  * false, a clip already watched in an earlier block can be continued past
  * without a rewatch (the participant can still replay it).
  *
- * Default true: a rating that follows a fresh viewing and one made from memory
- * three blocks later are not the same measurement. Set to false if pilot timing
- * shows the session running past an hour — CONFIRM WITH RANDY before changing.
+ * True, settled by Alex on 2026-07-23: a rating that follows a fresh viewing and
+ * one made from memory three blocks later are not the same measurement. Costs
+ * roughly three times the viewing time — flip to false only if pilot timing
+ * pushes the session past an hour, and tell Randy if you do.
  */
 const REQUIRE_FULL_WATCH_EACH_BLOCK = true;
 

@@ -10,16 +10,18 @@
 // four-digit stem (`1615` → `1615.mp4`). They are NOT committed to this repo:
 // see resolveVideoSrc below and README section "Stimulus videos".
 //
-// PROOF OF CONCEPT — pending Randy:
+// PROOF OF CONCEPT — still pending Randy:
 //   - The eight clips below are the ones Alex selected for the demo. Randy has
 //     not finalized the real sets yet.
 //   - All five sets currently point at those same eight clips so the
 //     random-set-assignment machinery is real and demonstrable. Replacing a set
 //     is a one-line edit per set once the real groupings exist.
+//
+// Settled (Alex, 2026-07-23):
 //   - Clip 0494 is annotated with five emotions (disgust, fear, sadness,
-//     disappointment, anger). The task probes exactly three per clip, so the
-//     first three are probed and all five are kept in `annotated` for the
-//     record. CONFIRM WITH RANDY which three should be probed.
+//     disappointment, anger). The task probes exactly three per clip, and the
+//     three are disgust, fear and sadness. All five stay in `annotated` for the
+//     record.
 
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { fnv1a } from "../utils/hash";
@@ -46,6 +48,7 @@ export const VIDEO_CATALOG: StimulusVideo[] = [
   { id: "1615", emotions: ["awe", "fear", "anxiety"] },
   {
     id: "0494",
+    // Three of the five annotated emotions, chosen by Alex on 2026-07-23.
     emotions: ["disgust", "fear", "sadness"],
     annotated: ["disgust", "fear", "sadness", "disappointment", "anger"],
   },

@@ -42,21 +42,26 @@ their own participant form, so the pair is yoked with no communication between m
 and the choice is reproducible from the data file. `SET_ASSIGNMENT_METHOD` is written
 into the output next to the set id.
 
-### Decisions that need Randy
+### Decisions (confirmed by Alex, 2026-07-23)
+
+- **Clip 0494 probes disgust, fear and sadness** — three of the five emotions the
+  library annotates it with. The other two (disappointment, anger) stay in the
+  `annotated` field for the record but are not asked about.
+- **Confidence is 1–100**, matching the intensity scale on the same page rather than the
+  1–7 confidence used by the scenario task.
+- **Sliders start at 50** with the value hidden until touched — same behaviour as
+  `SelfFrequency`. Consistent with the rest of the app, and accepted as a midpoint
+  anchor.
+- **A full viewing is required in every target block** (`REQUIRE_FULL_WATCH_EACH_BLOCK`
+  in `VideoTaskMain.tsx`), so each of the 24 ratings follows a fresh viewing rather than
+  memory. Costs roughly 3× the viewing time; flip the constant to false only if pilot
+  timing pushes the session past an hour.
+
+### Still open for Randy
 
 - **All five sets currently hold the same eight clips** (1615, 0494, 1097, 0027, 0366,
   0962, 0014, 1328) because the real groupings aren't chosen yet. The full study needs
   ≥40 unique clips. Swapping a set in is one line per set in `videos.ts`.
-- **Clip 0494** is annotated with five emotions (disgust, fear, sadness, disappointment,
-  anger). The task probes three, so the first three are used; all five are kept in the
-  `annotated` field. **Which three should be probed?**
-- **Confidence is 1–100**, matching the intensity scale on the same page rather than the
-  1–7 confidence used by the scenario task.
-- **Sliders start at 50** with the value hidden until touched — same behaviour as
-  `SelfFrequency`. Consistent with the rest of the app, but it is a midpoint anchor.
-- **A full viewing is required in every target block** (`REQUIRE_FULL_WATCH_EACH_BLOCK`
-  in `VideoTaskMain.tsx`), so each of the 24 ratings follows a fresh viewing rather than
-  memory. Flip the constant to false if pilot timing pushes the session past an hour.
 - **Instruction wording is a first draft.**
 
 ### 2. Video selection task
