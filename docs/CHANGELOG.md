@@ -100,11 +100,15 @@ get a single live view) and `stimulusDir` (the clip library). Rust falls back to
 machine-local app-data folder if a configured folder is missing, so an unmounted
 Research Drive cannot stop a session from starting.
 
-Clips are **not** committed and **not** in the installer built by CI — `mp4_noname/` and
-`public/videos/` are gitignored. `npm run stimuli` copies the demo clips into
-`public/videos` for local dev builds; the real study should set the stimulus folder.
-This needed `protocol-asset` on the `tauri` crate plus an `assetProtocol` scope in
-`tauri.conf.json`.
+The eight proof-of-concept clips are committed under `public/videos` (Alex's call,
+2026-07-23, with the public-repo redistribution tradeoff in view), so a fresh clone and
+both CI installers run with no setup. The full `mp4_noname` library stays gitignored;
+the real study, which needs 40+ clips, points at it via the stimulus folder instead.
+`npm run stimuli` refreshes `public/videos` when the demo set changes. Serving clips
+from an arbitrary folder needed `protocol-asset` on the `tauri` crate plus an
+`assetProtocol` scope in `tauri.conf.json`; verified in the built app by pointing it at
+a folder of decoy clips named after the eight real ones and confirming the task played
+the decoys.
 
 ### Output / data dictionary (no CSV schema change — reuses the existing columns)
 

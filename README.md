@@ -59,25 +59,28 @@ it's our own build.
 app isn't signed — click **More info → Run anyway**. Click through the installer
 and you get a **"PPS Study"** shortcut.
 
-## 3. Point it at the videos — do this before your first session
+## 3. Videos — nothing to do for now
 
-**The download does not contain the video clips.** They're large and they're not
-ours to redistribute, so the app reads them from a folder you choose. Without
-this step the video task will say a clip could not be loaded.
+**The eight demo clips are built into the app**, so you can go straight to
+step 4 and the video task will just work. Skip the rest of this section unless
+something goes wrong.
+
+When Randy finalises the real clip groupings the study will need 40+ clips,
+which is too many to ship inside the app. At that point you point it at the
+library instead:
 
 1. Get the clip library — the **`mp4_noname`** folder — onto the machine, or
    mount the Research Drive (`smb://research.drive.wisc.edu/niedenthal`) so the
-   folder is reachable. A local copy is faster and safer than playing 8 clips
-   over the network; ask me if you don't have one.
+   folder is reachable. A local copy is faster and safer than playing clips over
+   the network.
 2. Launch the app and sign in as **`admin@admin`** on the check-in screen.
 3. Under **"Folders on this machine"**, next to **Stimulus video folder**, click
    **Browse** and pick the `mp4_noname` folder. It saves as soon as you pick it.
-4. Sign out. That's it — the setting sticks on that machine, so it's a one-time
-   job per computer.
+4. Sign out. The setting sticks on that machine, so it's a one-time job per
+   computer.
 
-For the proof-of-concept the app only needs eight clips out of that folder
-(1615, 0494, 1097, 0027, 0366, 0962, 0014, 1328), so a folder holding just those
-eight works too.
+Leave that box empty and the app uses its built-in eight. Setting it overrides
+them.
 
 ## 4. Run it
 
@@ -158,8 +161,9 @@ on the lab machine / Research Drive — never copy them to a personal device
 
 Screenshot it and text or email me. Two things worth checking first:
 
-- **"This clip could not be loaded"** → the stimulus folder in section 3 isn't
-  set, or the Research Drive isn't mounted.
+- **"This clip could not be loaded"** → only happens if someone has set a
+  Stimulus video folder (section 3) that's missing or unmounted. Clear that box
+  on the dashboard and the app falls back to its built-in clips.
 - **Videos play but the wrong ones / partner sees different clips** → the two
   machines have different Dyad IDs typed on the participant form.
 
@@ -175,11 +179,12 @@ npm run tauri build    # build the installer
 npm test               # unit tests
 ```
 
-Stimulus clips are gitignored, so a fresh clone has none and neither do the CI
-builds — that's why section 3 exists. `npm run stimuli` copies the ones the app
-needs out of `./mp4_noname` (or pass another folder: `npm run stimuli -- D:\clips`).
-Whatever ends up in `public/videos` is baked into *that local build* as the
-fallback used when no stimulus folder is set.
+The eight demo clips are committed under `public/videos`, so a fresh clone and
+the CI installers both work with no setup. The full library (`mp4_noname`) is
+gitignored — far too big. If the demo set ever changes, `npm run stimuli`
+re-copies the clips the app needs out of `./mp4_noname` (or pass another folder:
+`npm run stimuli -- D:\clips`). Whatever sits in `public/videos` is baked into
+the build as the fallback used when no stimulus folder is set.
 
 `npm run dev` also serves **http://localhost:1420/preview.html** — a dev-only
 screen picker that jumps straight to any page of the video task, the selection

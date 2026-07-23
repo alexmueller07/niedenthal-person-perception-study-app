@@ -7,8 +7,8 @@ ratings.csv
 transitions.csv
 123_123_123_123/
 
-# Stimulus clips: the lab's library and the proof-of-concept copies the app
-# falls back to. Large binaries, and not ours to redistribute — the app reads
-# them from a folder chosen on the dashboard. See README "Stimulus videos".
+# The full stimulus library (2000+ clips, ~1.7 GB). Never committed — the app
+# reads it from a folder chosen on the dashboard. The eight proof-of-concept
+# clips in public/videos ARE committed, so a fresh clone and the CI installers
+# work with no setup; `npm run stimuli` repopulates them from this folder.
 mp4_noname/
-public/videos/

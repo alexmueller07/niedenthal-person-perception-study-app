@@ -2,8 +2,9 @@
 // public/videos, which is where the app looks when no stimulus folder has been
 // set on the dashboard.
 //
-// The clips are not in git (large binaries, and not ours to redistribute), so a
-// fresh clone has an empty public/videos until this runs.
+// The eight proof-of-concept clips are committed, so a fresh clone already has
+// them and this script is only needed when the demo set changes. The full
+// library (mp4_noname) is not in git.
 //
 //   npm run stimuli                 # looks for ./mp4_noname
 //   npm run stimuli -- D:\lab\clips # or point it somewhere else

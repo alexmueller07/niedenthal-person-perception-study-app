@@ -7,8 +7,9 @@
 // partner, and for an average UW-Madison student.
 //
 // Clips live in the lab's `mp4_noname` library and are referenced by their
-// four-digit stem (`1615` → `1615.mp4`). They are NOT committed to this repo:
-// see resolveVideoSrc below and README section "Stimulus videos".
+// four-digit stem (`1615` → `1615.mp4`). The eight proof-of-concept clips are
+// committed under public/videos so every build runs with no setup; the full
+// library is not, and the real study points at it instead. See resolveVideoSrc.
 //
 // PROOF OF CONCEPT — still pending Randy:
 //   - The eight clips below are the ones Alex selected for the demo. Randy has
@@ -124,9 +125,10 @@ export function assignSet(dyadId: string): VideoSet {
  *      Research Drive or a local copy), picked once by the researcher on the
  *      dashboard. This is the path the real study uses: the clips stay out of
  *      the installer and out of git.
- *   2. `public/videos/` — a bundled fallback holding just the proof-of-concept
- *      clips, so `npm run dev` and a fresh build work with no setup. That
- *      folder is gitignored; `npm run stimuli` repopulates it.
+ *   2. `public/videos/` — a bundled fallback holding just the eight
+ *      proof-of-concept clips, committed so `npm run dev`, a fresh clone and the
+ *      CI installers all work with no setup. `npm run stimuli` repopulates it
+ *      from the full library when the set changes.
  *
  * Tauri serves local files over the `asset:` protocol (enabled in
  * tauri.conf.json); in a plain browser only the bundled fallback exists.
