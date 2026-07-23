@@ -12,12 +12,23 @@ import TransitionScreen from "./TransitionScreen";
 
 const SOFTWARE_VERSION = "2.0.0";
 
+const DYAD_BLOCKS = 4;
+
 interface DyadTaskMainProps {
   formData: FormData;
   csvFilePath: string;
   taskOrder: number;
   onComplete?: () => void;
   onCsvError?: (msg: string) => void;
+  /** Reports block progress for the researcher dashboard. */
+  onProgress?: (done: number, total: number, detail: string) => void;
+  /**
+   * True while the continuous rating is running. The slider reads raw mouse X,
+   * so anything that tempts the participant to move the pointer off the trace
+   * (the help button, for one) has to be hidden while this is set — a stray
+   * move to a corner is recorded as a real rating.
+   */
+  onCursorLock?: (locked: boolean) => void;
 }
 
 function DyadTaskMain({
@@ -26,6 +37,8 @@ function DyadTaskMain({
   taskOrder,
   onComplete,
   onCsvError,
+  onProgress,
+  onCursorLock,
 }: DyadTaskMainProps) {
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [showVideoInput, setShowVideoInput] = useState(true);
@@ -54,6 +67,16 @@ function DyadTaskMain({
   const trialNumber = useRef<number>(1);
   // Fire-once guard: prevents onComplete from being called multiple times.
   const completedRef = useRef<boolean>(false);
+
+  // Mirrors the cursor-none condition used on the wrapper below: the pointer is
+  // the measurement while the video plays with no overlay on top of it.
+  const cursorLocked = Boolean(
+    videoSrc && !showToggleScreen && !showTransitionScreen && instructionsDone && !videoEnded
+  );
+  useEffect(() => {
+    onCursorLock?.(cursorLocked);
+    return () => onCursorLock?.(false);
+  }, [cursorLocked, onCursorLock]);
 
   const handleCsvError = useCallback(
     (err: unknown) => {
@@ -280,6 +303,11 @@ function DyadTaskMain({
       nextStopTimeSecRef.current += 150;
       textPromptCountRef.current += 1;
       trialNumber.current += 1;
+      onProgress?.(
+        textPromptCountRef.current,
+        DYAD_BLOCKS,
+        `Block ${Math.min(textPromptCountRef.current + 1, DYAD_BLOCKS)} of ${DYAD_BLOCKS}`
+      );
 
       if (isLastBlock) {
         // Last block complete — end session without showing another transition screen.

@@ -1,31 +1,100 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { RRData } from "./store";
 import {
   groupMembers,
   groupNumbers,
   groupPairs,
   isValidEmail,
+  loadData,
   normalizeEmail,
   participantProgress,
   signIn,
   toggleMeeting,
   ADMIN_EMAIL,
 } from "./store";
+import ProgressPanel from "./ProgressPanel";
+import FolderSettings from "./FolderSettings";
+import { loadProgress, saveProgress } from "./progress";
+import type { ProgressMap, RRProgress } from "./progress";
+import { EMPTY_SETTINGS, loadSettings, saveSettings } from "../utils/settings";
+import type { AppSettings } from "../utils/settings";
 
-// Researcher-only round-robin dashboard (open by signing in as admin@admin).
-// Shows every group, who has met whom, and who is still left to meet — and
-// lets the researcher mark a pair as met (or undo a mistaken click). Rules for
-// the data: it contains participant emails, so this screen is for lab staff
-// only; the store file lives in the app-data folder on this machine.
+// Researcher-only dashboard (open by signing in as admin@admin) — the lab calls
+// it the panopticon. Two jobs:
+//   - the round-robin: every group, who has met whom, who is still left, and
+//     one-click marking of a pair as met
+//   - the live session view: where each participant currently is in the app and
+//     whether anyone has pressed the help button
+//
+// Rules for the data: it contains participant emails, so this screen is for lab
+// staff only, and the files behind it stay on the lab machine / Research Drive.
+
+/** How often the dashboard re-reads the tracking folder. */
+const REFRESH_MS = 3000;
+
+/**
+ * How long after a click on this screen to ignore what the poll read back.
+ * A local edit saves immediately, but a poll that lands mid-save would show the
+ * pre-edit file and make the click look like it did nothing.
+ */
+const LOCAL_EDIT_GRACE_MS = 5000;
+
 interface AdminDashboardProps {
   data: RRData;
   onChange: (data: RRData) => void;
+  /** Applies data read back from disk without re-saving it. */
+  onRefresh: (data: RRData) => void;
   onExit: () => void;
 }
 
-export default function AdminDashboard({ data, onChange, onExit }: AdminDashboardProps) {
+export default function AdminDashboard({
+  data,
+  onChange,
+  onRefresh,
+  onExit,
+}: AdminDashboardProps) {
   const [newEmail, setNewEmail] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<ProgressMap>({});
+  const [settings, setSettings] = useState<AppSettings>(EMPTY_SETTINGS);
+
+  const lastLocalEditRef = useRef<number>(0);
+
+  useEffect(() => {
+    void loadSettings().then(setSettings);
+  }, []);
+
+  const handleSettingsChange = (next: AppSettings) => {
+    setSettings(next);
+    void saveSettings(next).catch((err) => console.error("Settings save failed:", err));
+  };
+
+  const refresh = useCallback(() => {
+    if (Date.now() - lastLocalEditRef.current < LOCAL_EDIT_GRACE_MS) return;
+    void loadProgress().then(setProgress);
+    void loadData().then(onRefresh);
+  }, [onRefresh]);
+
+  useEffect(() => {
+    void loadProgress().then(setProgress);
+    const id = window.setInterval(refresh, REFRESH_MS);
+    return () => window.clearInterval(id);
+  }, [refresh]);
+
+  const localEdit = (fn: () => void) => {
+    lastLocalEditRef.current = Date.now();
+    fn();
+  };
+
+  const handleClearHelp = (entry: RRProgress) => {
+    const cleared: RRProgress = { ...entry, helpResolvedAt: new Date().toISOString() };
+    localEdit(() => {
+      setProgress((prev) => ({ ...prev, [cleared.email]: cleared }));
+      void saveProgress(cleared).catch((err) =>
+        console.error("Clearing the help flag failed:", err)
+      );
+    });
+  };
 
   const groups = groupNumbers(data);
 
@@ -41,7 +110,7 @@ export default function AdminDashboard({ data, onChange, onExit }: AdminDashboar
       setAddError(`${email} is already registered (Group ${result.participant.group}).`);
       return;
     }
-    onChange(result.data);
+    localEdit(() => onChange(result.data));
     setNewEmail("");
   };
 
@@ -55,7 +124,7 @@ export default function AdminDashboard({ data, onChange, onExit }: AdminDashboar
         <div className="flex items-center gap-4">
           <span className="text-white text-sm">
             {data.participants.length} participant{data.participants.length === 1 ? "" : "s"} ·{" "}
-            {groups.length} group{groups.length === 1 ? "" : "s"}
+            {groups.length} group{groups.length === 1 ? "" : "s"} · live
           </span>
           <button
             type="button"
@@ -67,7 +136,12 @@ export default function AdminDashboard({ data, onChange, onExit }: AdminDashboar
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-8 py-8 space-y-8">
+      <div className="max-w-6xl mx-auto px-8 py-8 space-y-8">
+        {/* Live session progress and help requests */}
+        <ProgressPanel progress={progress} onClearHelp={handleClearHelp} />
+
+        <FolderSettings settings={settings} onChange={handleSettingsChange} />
+
         {/* Add participant */}
         <div className="bg-black border p-6">
           <h2 className="text-white text-xl font-bold mb-4">Add a participant</h2>
@@ -172,7 +246,7 @@ export default function AdminDashboard({ data, onChange, onExit }: AdminDashboar
                     </span>
                     <button
                       type="button"
-                      onClick={() => onChange(toggleMeeting(data, pair.a, pair.b))}
+                      onClick={() => localEdit(() => onChange(toggleMeeting(data, pair.a, pair.b)))}
                       title={pair.metAt ? "Click to undo (marks the pair as not met)" : "Mark this pair as met"}
                       className={`px-4 py-1.5 rounded-lg border transition-colors text-sm ${
                         pair.metAt

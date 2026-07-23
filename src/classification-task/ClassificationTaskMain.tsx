@@ -1,12 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { csvEscape } from "../utils/csv";
 import type { FormData } from "../App";
-import PressKeyPrompt from "../components/PressKeyPrompt";
-import Instructions from "../dyad-task/Instructions";
-import ScenarioRating from "./components/ScenarioRating";
-import type { EmotionRating } from "./components/ScenarioRating";
-import { SCENARIOS } from "./scenarios";
+import VideoTaskMain from "../video-task/VideoTaskMain";
 import PartnerHistory from "./PartnerHistory";
 import SelfFrequency from "./SelfFrequency";
 import Loneliness from "./Loneliness";
@@ -22,28 +18,34 @@ import { shuffle } from "../utils/shuffle";
 
 const SOFTWARE_VERSION = "2.0.0";
 
-// Instructions shown before the situational emotion-rating task.
-const SCENARIO_INSTRUCTIONS = [
-  "In this part of the study, you will read a series of situations.",
-  "For each situation, you will rate the degree to which a person would experience different emotions in that situation.",
-  "You will make each rating on a scale from 1 (Not at all) to 7 (Extremely).",
-  "After each emotion rating, you will also rate how confident you are about that rating, again from 1 (Not at all) to 7 (Extremely).",
-  "You will be asked to provide ratings for three different people: yourself, your partner, and an average UW-Madison student.",
-  "The three people will be presented in random order.",
-  "For each person, please try to be as accurate as possible.",
-  "We ask that you answer each question efficiently in order to keep your participation time within one hour.",
-];
-
-// Grammatical phrase for the rated target, used in the emotion prompt. "your
-// partner" and "an average UW-Madison student" already read correctly; only
-// "yourself" needs to become "you".
-const targetPhrase = (person: string): string => (person === "yourself" ? "you" : person);
+// Human-readable names for the questionnaire steps, shown on the researcher
+// dashboard so "where is this participant" is answerable at a glance.
+const STEP_LABELS: Record<string, string> = {
+  videoTask: "Video affective-response task",
+  selfFrequency: "Emotion frequency",
+  experience: "Conversation experience",
+  partnerSliders: "Partner ratings",
+  loneliness: "Loneliness",
+  socialConnectedness: "Social connectedness",
+  expressivity: "Expressivity",
+  autism: "Autism-spectrum quotient",
+  partnerHistory: "Partner history",
+  demographics: "Demographics",
+  studyFeedback: "Study feedback",
+};
 
 interface ClassificationTaskMainProps {
   formData: FormData;
   csvFilePath: string;
   onComplete?: () => void;
   onCsvError?: (msg: string) => void;
+  /** Reports progress for the researcher dashboard. */
+  onProgress?: (
+    stage: "video" | "questionnaires",
+    done: number,
+    total: number,
+    detail: string
+  ) => void;
 }
 
 function ClassificationTaskMain({
@@ -51,10 +53,11 @@ function ClassificationTaskMain({
   csvFilePath,
   onComplete,
   onCsvError,
+  onProgress,
 }: ClassificationTaskMainProps) {
   const trialNumber = useRef<number>(1);
 
-  const writeCSVRow = async (
+  const writeCSVRow = useCallback(async (
     ratingTask: string,
     subTask: string,
     emotion1: string = "",
@@ -86,7 +89,7 @@ function ClassificationTaskMain({
 
     await invoke("write_csv_transitions", { path: csvFilePath, contents: [row] });
     trialNumber.current += 1;
-  };
+  }, [csvFilePath, formData]);
 
   const handleCsvError = (err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err);
@@ -94,21 +97,14 @@ function ClassificationTaskMain({
     onCsvError?.(`Write failed: ${msg}`);
   };
 
-  const [currentStep, setCurrentStep] = useState<string>("instructions");
-  const [instructionIndex, setInstructionIndex] = useState<number>(0);
-  const [currentPersonIndex, setCurrentPersonIndex] = useState<number>(0);
-  const [shuffledPeople, setShuffledPeople] = useState<string[]>([]);
-  const [showTransition, setShowTransition] = useState<boolean>(false);
+  const [currentStep, setCurrentStep] = useState<string>("videoTask");
   const [formOrder, setFormOrder] = useState<string[]>([]);
   const [currentFormIndex, setCurrentFormIndex] = useState<number>(0);
 
-  const RATING_PEOPLE = ["yourself", "your partner", "an average UW-Madison student"];
-
   useEffect(() => {
-    setShuffledPeople(shuffle(RATING_PEOPLE));
     const blockRandomized = shuffle(["loneliness", "socialConnectedness", "expressivity"]);
     setFormOrder([
-      "scenarios",
+      "videoTask",
       "selfFrequency",
       "experience",
       "partnerSliders",
@@ -123,53 +119,9 @@ function ClassificationTaskMain({
   }, [csvFilePath]);
 
 
-  useEffect(() => {
-    const handleKeyPress = async (event: KeyboardEvent) => {
-      if (currentStep === "instructions") {
-        if (instructionIndex + 1 >= SCENARIO_INSTRUCTIONS.length) {
-          setCurrentStep("ratings");
-          return;
-        }
-        setInstructionIndex((i) => i + 1);
-        return;
-      }
-      if (currentStep === "ratings" && showTransition && event.key === " ") {
-        event.preventDefault();
-        setShowTransition(false);
-        setCurrentPersonIndex((prev) => prev + 1);
-        return;
-      }
-      if (currentStep === "completed") {
-        onComplete?.();
-        return;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentStep, instructionIndex, showTransition, onComplete]);
-
-  const handleScenarioComplete = async (scenarioId: string, ratings: EmotionRating[]) => {
-    const ratingPerson = shuffledPeople[currentPersonIndex];
-    try {
-      // Long format: one row per (emotion, measure). emotion1 = emotion, emotion2 =
-      // measure type ("intensity" | "confidence"), response = the 1-7 value.
-      for (const r of ratings) {
-        await writeCSVRow("emotion_scenarios", scenarioId, r.emotion, "intensity", ratingPerson, r.intensity);
-        await writeCSVRow("emotion_scenarios", scenarioId, r.emotion, "confidence", ratingPerson, r.confidence);
-      }
-    } catch (err) {
-      handleCsvError(err);
-    }
-  };
-
-  const handleAllScenariosComplete = async () => {
-    if (currentPersonIndex + 1 < shuffledPeople.length) {
-      setShowTransition(true);
-    } else {
-      setCurrentFormIndex(1);
-      setCurrentStep("selfFrequency");
-    }
+  const handleVideoTaskComplete = () => {
+    setCurrentFormIndex(1);
+    setCurrentStep(formOrder[1] ?? "selfFrequency");
   };
 
   const advanceForm = () => {
@@ -177,6 +129,13 @@ function ClassificationTaskMain({
       const nextIndex = currentFormIndex + 1;
       setCurrentFormIndex(nextIndex);
       setCurrentStep(formOrder[nextIndex]);
+      // Questionnaire pages only — the video task reports its own sub-progress.
+      onProgress?.(
+        "questionnaires",
+        nextIndex - 1,
+        formOrder.length - 1,
+        STEP_LABELS[formOrder[nextIndex]] ?? formOrder[nextIndex]
+      );
     } else {
       setCurrentStep("completed");
       onComplete?.();
@@ -186,10 +145,6 @@ function ClassificationTaskMain({
   const handleStepComplete = async (stepData?: ClassificationStepData) => {
     try {
       switch (currentStep) {
-        case "instructions":
-          setCurrentStep("ratings");
-          break;
-
         case "partnerHistory":
           await writeCSVRow("partner_history", "Have you met your partner prior to today's study?", "", "", "", stepData?.partnerHistory ? "Yes" : "No");
           await writeCSVRow("partner_history", "How long have you known your partner? (in months)", "", "", "", String(stepData?.partnerHistoryMonths ?? ""));
@@ -305,55 +260,25 @@ function ClassificationTaskMain({
     return null;
   }
 
+  // The video task owns the full width: its own pinned header spans edge to
+  // edge and its pages already pad themselves. Nesting it in the questionnaire
+  // wrapper below double-padded it, which cut the header border short and, once
+  // the vertical scrollbar appeared, pushed the page into scrolling sideways.
+  if (currentStep === "videoTask") {
+    return (
+      <VideoTaskMain
+        dyadId={formData.dyadId}
+        writeRow={writeCSVRow}
+        onProgress={(done, total, label) => onProgress?.("video", done, total, label)}
+        onComplete={handleVideoTaskComplete}
+        onCsvError={handleCsvError}
+      />
+    );
+  }
+
   return (
     <div className="min-h-full w-full flex flex-col items-center justify-center bg-black">
       <div className="w-full mx-auto px-8">
-
-        {currentStep === "instructions" && (
-          <div className="overflow-hidden h-screen justify-center items-center">
-            <Instructions
-              onBack={() => setInstructionIndex((i) => Math.max(0, i - 1))}
-              instructionIndex={instructionIndex}
-              groupSize={4}
-              instructions={SCENARIO_INSTRUCTIONS}
-            />
-          </div>
-        )}
-
-        {currentStep === "ratings" && (
-          <>
-            {showTransition ? (
-              <div className="min-h-screen w-full flex flex-col justify-center items-center bg-black overflow-hidden">
-                <div className=" max-w-4xl mx-auto">
-                  <h1 className="text-white text-2xl">Phase Complete!</h1>
-                  <p className="text-white text-2xl pt-32">
-                    You have completed all ratings for{" "}
-                    {shuffledPeople[currentPersonIndex]}.
-                  </p>
-                  <p className="text-white text-2xl pt-32">
-                    You will now be rating{" "}
-                    {shuffledPeople[currentPersonIndex + 1]}.
-                  </p>
-                  <div className="">
-                    <PressKeyPrompt keyLabel="Space" text="to continue to the next person" />
-                  </div>
-                </div>
-              </div>
-            ) : shuffledPeople.length > 0 ? (
-              <ScenarioRating
-                key={currentPersonIndex}
-                scenarios={SCENARIOS}
-                targetPhrase={targetPhrase(shuffledPeople[currentPersonIndex])}
-                onScenarioComplete={handleScenarioComplete}
-                onAllScenariosComplete={handleAllScenariosComplete}
-              />
-            ) : (
-              <div className="min-h-screen w-full flex items-center justify-center bg-black">
-                <h1 className="text-white text-4xl font-bold">Loading...</h1>
-              </div>
-            )}
-          </>
-        )}
 
         {currentStep === "partnerHistory" && (
           <PartnerHistory onContinue={(data) => handleStepComplete(data)} />

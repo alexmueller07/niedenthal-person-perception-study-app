@@ -6,6 +6,146 @@ to collect real participant data.
 
 ---
 
+## 2026-07-23 — Phase C: video affective-response task; dashboard sees live progress
+
+⚠️ **Measurement change — needs Randy's sign-off before live collection.** The
+situational scenario task added in Phase B is replaced by a video task. The construct
+is related (emotion intensity + confidence, for three targets) but the item is a film
+clip instead of a written situation and the scale is **1–100 instead of 1–7**, so
+these ratings are not directly comparable to Phase B data.
+
+### 1. Video affective-response task (replaces the scenario task)
+
+- **New files:** `src/video-task/videos.ts`, `StimulusPlayer.tsx`, `VideoWatchPage.tsx`,
+  `VideoRatingPage.tsx`, `VideoSelectionPage.tsx`, `VideoTaskMain.tsx`,
+  `videos.test.ts`.
+- **Edited:** `src/classification-task/ClassificationTaskMain.tsx` (step `scenarios` →
+  `videoTask`).
+- **Retired, not deleted:** `scenarios.ts` and `components/ScenarioRating.tsx` are no
+  longer reachable from the flow. Left in the tree so switching back is a one-line
+  change if Randy wants the scenario task kept.
+
+**Structure**, deliberately the same shape as the task it replaces: three targets
+(yourself / your partner / an average UW-Madison student) in random order; the same
+eight clips rated for each; clip order randomized within a target block; emotion order
+randomized within a clip.
+
+**Each trial is two pages.** Page 1 plays the clip — no native controls, so it cannot
+be scrubbed, and **Continue is disabled until the clip has run to the end**. Page 2 is
+the six questions: three emotions × (how strongly the clip evoked it, how confident the
+participant is), on 1–100 sliders, all on one page. A "Replay video" button on page 2
+opens the clip again and the number of replays is recorded.
+
+**Clip sets.** Five premade sets of eight. A dyad is assigned one set by
+`fnv1a(dyadId) mod 5` — both lab machines derive the same set from the Dyad ID typed on
+their own participant form, so the pair is yoked with no communication between machines,
+and the choice is reproducible from the data file. `SET_ASSIGNMENT_METHOD` is written
+into the output next to the set id.
+
+### Decisions (confirmed by Alex, 2026-07-23)
+
+- **Clip 0494 probes disgust, fear and sadness** — three of the five emotions the
+  library annotates it with. The other two (disappointment, anger) stay in the
+  `annotated` field for the record but are not asked about.
+- **Confidence is 1–100**, matching the intensity scale on the same page rather than the
+  1–7 confidence used by the scenario task.
+- **Sliders start at 50** with the value hidden until touched — same behaviour as
+  `SelfFrequency`. Consistent with the rest of the app, and accepted as a midpoint
+  anchor.
+- **A full viewing is required in every target block** (`REQUIRE_FULL_WATCH_EACH_BLOCK`
+  in `VideoTaskMain.tsx`), so each of the 24 ratings follows a fresh viewing rather than
+  memory. Costs roughly 3× the viewing time; flip the constant to false only if pilot
+  timing pushes the session past an hour.
+
+### Still open for Randy
+
+- **All five sets currently hold the same eight clips** (1615, 0494, 1097, 0027, 0366,
+  0962, 0014, 1328) because the real groupings aren't chosen yet. The full study needs
+  ≥40 unique clips. Swapping a set in is one line per set in `videos.ts`.
+- **Instruction wording is a first draft.**
+
+### 2. Video selection task
+
+One page after the ratings: every clip they saw, with two checkbox columns — "My partner
+would like this" and "I would like this". Clips can be replayed from the page. Selecting
+nothing is allowed but asks for confirmation first.
+
+### 3. Round-robin dashboard shows live progress and help requests
+
+- **New files:** `src/roundrobin/progress.ts`, `ProgressPanel.tsx`, `FolderSettings.tsx`,
+  `src/components/HelpButton.tsx`, `src/utils/settings.ts`, `src/utils/hash.ts`,
+  `progress.test.ts`.
+- **Edited:** `AdminDashboard.tsx`, `App.tsx`, `DyadTaskMain.tsx`, `lib.rs`,
+  `tauri.conf.json`, `Cargo.toml`.
+
+Every step change writes a small per-participant JSON file (`p-<hash>.json`, hashed so
+emails don't appear in filenames) into a `progress` folder. The dashboard re-reads that
+folder every 3 s and shows stage, current page, a session progress bar, and a red banner
+for anyone who pressed the new **"Need help?"** button. One file per participant, not one
+shared file, so two machines writing at once cannot overwrite each other.
+
+**The help button is hidden during the dyad continuous rating.** The slider reads raw
+mouse X (`Slider.tsx`), so a participant moving the pointer to a corner to click it would
+be recorded as a "very negative" rating. `DyadTaskMain` now reports when the pointer is
+the measurement and `App` hides the button for that whole period.
+
+**Progress tracking never blocks a session:** a failed progress write is logged and
+dropped. It is researcher convenience, not study data.
+
+### 4. Shared tracking folder and stimulus folder
+
+Two optional paths set on the dashboard and stored in `settings.json` in app data:
+`storeDir` (round-robin + progress; point every machine at one Research Drive folder to
+get a single live view) and `stimulusDir` (the clip library). Rust falls back to the
+machine-local app-data folder if a configured folder is missing, so an unmounted
+Research Drive cannot stop a session from starting.
+
+Clips are **not** committed and **not** in the installer built by CI — `mp4_noname/` and
+`public/videos/` are gitignored. `npm run stimuli` copies the demo clips into
+`public/videos` for local dev builds; the real study should set the stimulus folder.
+This needed `protocol-asset` on the `tauri` crate plus an `assetProtocol` scope in
+`tauri.conf.json`.
+
+### Output / data dictionary (no CSV schema change — reuses the existing columns)
+
+Written to `transitions.csv` alongside the questionnaire rows.
+
+| ratingTask | subTask | emotion1 | emotion2 | ratingPerson | response |
+|---|---|---|---|---|---|
+| `video_task` | `set_assignment` | | | | set id, e.g. `SET_C` |
+| `video_task` | `set_assignment_method` | | | | `fnv1a(dyadId) mod 5` |
+| `video_task` | `set_contents` | | | | the eight clip ids, `;`-joined |
+| `video_task` | `target_order` | | | | the three targets, `;`-joined |
+| `video_task` | `video_order` | | | target | clip order for that block, `;`-joined |
+| `video_affect` | clip id | emotion | `intensity` | target | 1–100 |
+| `video_affect` | clip id | emotion | `confidence` | target | 1–100 |
+| `video_affect` | clip id | | `watch_plays` | target | completed viewings on the watch page |
+| `video_affect` | clip id | | `first_watch_ms` | target | ms from page shown to end of first viewing |
+| `video_affect` | clip id | | `rating_page_replays` | target | replays opened on the rating page |
+| `video_selection` | `for_partner` / `for_self` | | | | selected clip ids, `;`-joined |
+| `video_selection` | `n_for_partner` / `n_for_self` | | | | count |
+| `video_selection` | `presented_order` | | | | row order as shown |
+
+Long format, as before. Per participant: 3 targets × 8 clips × (3 emotions × 2 measures
++ 3 timing rows) = **216 `video_affect` rows**, plus 7 `video_task` and 5
+`video_selection` rows.
+
+### Verification
+
+- `npm test` → 46/46 pass (31 new: set assignment, catalog integrity, clip-source
+  resolution, progress files, stage maths, help-request state).
+- `npx tsc --noEmit`, `npm run build`, `cargo check` → all pass.
+- Driven end-to-end in a headless browser: all 24 trials plus both target transitions and
+  the selection page; row counts and contents verified (216 / 7 / 5 as above). Confirmed
+  Continue stays disabled until a clip finishes, and that a help request raised by a
+  participant appears on the dashboard, clears from the dashboard, and the participant's
+  notice then disappears on its own.
+- **Not yet run on lab hardware.** Clip playback from a Research Drive path over the
+  asset protocol, and the shared tracking folder across two machines, should both be
+  tried on the actual lab machines before live use.
+
+---
+
 ## 2026-06-10 — Phase B: situational scenarios replace the emotion-transition task
 
 ⚠️ **This is a measurement change and MUST be reviewed/approved by Randy before any

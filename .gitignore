@@ -6,3 +6,9 @@ src-tauri/target
 ratings.csv
 transitions.csv
 123_123_123_123/
+
+# Stimulus clips: the lab's library and the proof-of-concept copies the app
+# falls back to. Large binaries, and not ours to redistribute — the app reads
+# them from a folder chosen on the dashboard. See README "Stimulus videos".
+mp4_noname/
+public/videos/

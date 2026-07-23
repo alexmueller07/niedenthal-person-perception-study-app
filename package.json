@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "stimuli": "node scripts/copy-stimuli.mjs",
     "tauri": "tauri"
   },
   "dependencies": {
