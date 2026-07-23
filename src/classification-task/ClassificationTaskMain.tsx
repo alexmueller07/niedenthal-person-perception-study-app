@@ -260,19 +260,25 @@ function ClassificationTaskMain({
     return null;
   }
 
+  // The video task owns the full width: its own pinned header spans edge to
+  // edge and its pages already pad themselves. Nesting it in the questionnaire
+  // wrapper below double-padded it, which cut the header border short and, once
+  // the vertical scrollbar appeared, pushed the page into scrolling sideways.
+  if (currentStep === "videoTask") {
+    return (
+      <VideoTaskMain
+        dyadId={formData.dyadId}
+        writeRow={writeCSVRow}
+        onProgress={(done, total, label) => onProgress?.("video", done, total, label)}
+        onComplete={handleVideoTaskComplete}
+        onCsvError={handleCsvError}
+      />
+    );
+  }
+
   return (
     <div className="min-h-full w-full flex flex-col items-center justify-center bg-black">
       <div className="w-full mx-auto px-8">
-
-        {currentStep === "videoTask" && (
-          <VideoTaskMain
-            dyadId={formData.dyadId}
-            writeRow={writeCSVRow}
-            onProgress={(done, total, label) => onProgress?.("video", done, total, label)}
-            onComplete={handleVideoTaskComplete}
-            onCsvError={handleCsvError}
-          />
-        )}
 
         {currentStep === "partnerHistory" && (
           <PartnerHistory onContinue={(data) => handleStepComplete(data)} />

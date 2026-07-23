@@ -240,8 +240,12 @@ function App() {
 
   const allTasksCompleted = completedTasks.dyad && completedTasks.classification;
 
+  // The wrapper below is w-full, not w-screen. #root is the scroll container, so
+  // on any page tall enough to scroll, 100vw is wider than the space left beside
+  // the vertical scrollbar and the app picks up a horizontal scrollbar too.
+
   return (
-    <div className="w-screen bg-black cursor-auto">
+    <div className="w-full bg-black cursor-auto">
       <AdminQuitModal
         isOpen={showAdminQuit}
         onCancel={() => setShowAdminQuit(false)}
