@@ -23,9 +23,6 @@ export default function Experience({ onContinue }: ClassificationTaskProps) {
           text: textInput,
         })
       }
-      confirmMessage="There are unanswered questions on this page. Would you like to continue?"
-      confirmText="Continue"
-      cancelText="Close"
     >
       <div>
         <MatrixQuestion
