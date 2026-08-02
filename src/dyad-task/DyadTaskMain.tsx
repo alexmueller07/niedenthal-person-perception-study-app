@@ -50,10 +50,21 @@ function DyadTaskMain({
   const [instructionsDone, setInstructionsDone] = useState(false);
   const [instructionIndex, setInstructionIndex] = useState(0);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
-  const [latestSlider, setLatestSlider] = useState<number>(50);
+  // Not state: the slider is sampled 10×/s and nothing renders from the latest
+  // value, so keeping it in state re-rendered the whole task on every sample.
   const latestSliderRef = useRef<number>(50);
   const [videoEnded, setVideoEnded] = useState(false);
   const [showTransitionScreen, setShowTransitionScreen] = useState(false);
+  /**
+   * True once the video has run out and the last writing + rating screen is
+   * being collected.
+   *
+   * Randy, 2026-07-30: a video shorter than the block length used to end the
+   * task outright, with no writing screen and no ratings — so a short test clip
+   * showed none of the directions. The writing screen and the Likert are now
+   * always collected at the end, whatever the video's length.
+   */
+  const [awaitingFinalRating, setAwaitingFinalRating] = useState(false);
 
   const overlayWatchRef = useRef<number | null>(null);
   const sliderFlushRef = useRef<number | null>(null);
@@ -67,6 +78,11 @@ function DyadTaskMain({
   const trialNumber = useRef<number>(1);
   // Fire-once guard: prevents onComplete from being called multiple times.
   const completedRef = useRef<boolean>(false);
+  // End-of-video is reported by three independent detectors (the `ended` event,
+  // a timeupdate threshold, and a polling fallback). This makes the first one
+  // that fires the only one that does anything.
+  const videoFinishedRef = useRef<boolean>(false);
+  const awaitingFinalRatingRef = useRef<boolean>(false);
 
   // Mirrors the cursor-none condition used on the wrapper below: the pointer is
   // the measurement while the video plays with no overlay on top of it.
@@ -92,6 +108,50 @@ function DyadTaskMain({
     completedRef.current = true;
     onComplete?.();
   }, [onComplete]);
+
+  /** Writes anything still sitting in the 15-second sample buffer. */
+  const flushSamples = useCallback(() => {
+    const buffer = sampleBufferRef.current;
+    if (buffer.length === 0) return;
+    invoke("write_csv_ratings", {
+      path: csvFilePath,
+      contents: buffer.splice(0, buffer.length),
+    }).catch(handleCsvError);
+  }, [csvFilePath, handleCsvError]);
+
+  /** Stops the video and the sampler, and writes whatever is still buffered. */
+  const stopPlayback = useCallback(() => {
+    videoFinishedRef.current = true;
+    videoRef.current?.pause();
+    setVideoEnded(true);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    flushSamples();
+  }, [flushSamples]);
+
+  /** Everything is collected — hand back to the app. */
+  const finishTask = useCallback(() => {
+    stopPlayback();
+    awaitingFinalRatingRef.current = false;
+    setAwaitingFinalRating(false);
+    setShowToggleScreen(false);
+    callOnComplete();
+  }, [stopPlayback, callOnComplete]);
+
+  /**
+   * The video ran out. Stop, then collect the final writing + rating screen
+   * before finishing — the task never ends without it.
+   */
+  const handleVideoFinished = useCallback(() => {
+    if (videoFinishedRef.current) return;
+    stopPlayback();
+    awaitingFinalRatingRef.current = true;
+    setAwaitingFinalRating(true);
+    setAttemptedSubmit(false);
+    setShowToggleScreen(true);
+  }, [stopPlayback]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -146,18 +206,7 @@ function DyadTaskMain({
         taskStartMsRef.current = Date.now();
 
         timeoutRef.current = window.setTimeout(() => {
-          const buffer = sampleBufferRef.current;
-          if (buffer.length > 0) {
-            invoke("write_csv_ratings", { path: csvFilePath, contents: buffer }).catch(
-              handleCsvError
-            );
-            sampleBufferRef.current = [];
-          }
-          if (videoRef.current) {
-            videoRef.current.pause();
-            setVideoEnded(true);
-            callOnComplete();
-          }
+          handleVideoFinished();
         }, 10000000);
       }
 
@@ -192,15 +241,7 @@ function DyadTaskMain({
         }
       }, 50);
 
-      sliderFlushRef.current = window.setInterval(() => {
-        const buffer = sampleBufferRef.current;
-        if (buffer.length > 0) {
-          const toFlush = buffer.splice(0, buffer.length);
-          invoke("write_csv_ratings", { path: csvFilePath, contents: toFlush }).catch(
-            handleCsvError
-          );
-        }
-      }, 15000);
+      sliderFlushRef.current = window.setInterval(flushSamples, 15000);
     }
 
     return () => {
@@ -211,50 +252,34 @@ function DyadTaskMain({
     };
   }, [videoSrc, instructionsDone, showToggleScreen, showTransitionScreen]);
 
-  // Polling end-of-video detection.
+  // Polling end-of-video detection (fallback for webviews that swallow `ended`).
   useEffect(() => {
     if (!videoSrc || videoEnded) return;
     const interval = setInterval(() => {
       const el = videoRef.current;
       if (el && el.duration && el.currentTime >= el.duration - 0.1) {
-        setVideoEnded(true);
-        setShowToggleScreen(false);
-        callOnComplete();
+        handleVideoFinished();
       }
     }, 100);
     return () => clearInterval(interval);
-  }, [videoSrc, videoEnded, callOnComplete]);
+  }, [videoSrc, videoEnded, handleVideoFinished]);
 
   // Event-based end-of-video detection.
   useEffect(() => {
     const el = videoRef.current;
     if (!el || !videoSrc) return;
 
-    const flushAndComplete = () => {
-      if (videoEnded) return;
-      setVideoEnded(true);
-      setShowToggleScreen(false);
-      const buffer = sampleBufferRef.current;
-      if (buffer.length > 0) {
-        invoke("write_csv_ratings", {
-          path: csvFilePath,
-          contents: buffer.splice(0, buffer.length),
-        }).catch(handleCsvError);
-      }
-      callOnComplete();
-    };
-
     const handleTimeUpdate = () => {
-      if (el.currentTime >= el.duration - 0.5 && !videoEnded) flushAndComplete();
+      if (el.duration && el.currentTime >= el.duration - 0.5) handleVideoFinished();
     };
 
-    el.addEventListener("ended", flushAndComplete);
+    el.addEventListener("ended", handleVideoFinished);
     el.addEventListener("timeupdate", handleTimeUpdate);
     return () => {
-      el.removeEventListener("ended", flushAndComplete);
+      el.removeEventListener("ended", handleVideoFinished);
       el.removeEventListener("timeupdate", handleTimeUpdate);
     };
-  }, [videoSrc, csvFilePath, videoEnded, callOnComplete, handleCsvError]);
+  }, [videoSrc, handleVideoFinished]);
 
   // Register a flush so the researcher save-and-quit path writes any buffered
   // slider samples to disk before the app exits (the sampler only auto-flushes
@@ -270,16 +295,17 @@ function DyadTaskMain({
     return unregister;
   }, [csvFilePath]);
 
-  // Play/pause based on overlay state.
+  // Play/pause based on overlay state. Never restarts a video that has already
+  // run out — closing the final writing screen must not replay the last frame.
   useEffect(() => {
     if (videoRef.current) {
-      if (showToggleScreen || showTransitionScreen) {
+      if (showToggleScreen || showTransitionScreen || videoEnded) {
         videoRef.current.pause();
       } else if (instructionsDone) {
         videoRef.current.play();
       }
     }
-  }, [showToggleScreen, showTransitionScreen, instructionsDone]);
+  }, [showToggleScreen, showTransitionScreen, instructionsDone, videoEnded]);
 
   const submitAndAdvance = async (ratingValue: number, note: string) => {
     try {
@@ -288,47 +314,33 @@ function DyadTaskMain({
         : 0;
       const movieTime = videoRef.current?.currentTime ?? 0;
 
-      const row = buildRow(latestSlider, ratingValue, elapsed, movieTime, 1, note);
+      const row = buildRow(latestSliderRef.current, ratingValue, elapsed, movieTime, 1, note);
       await invoke("write_csv_ratings", { path: csvFilePath, contents: [row] });
 
-      // Determine if this is the last block before mutating the ref.
-      const isLastBlock = textPromptCountRef.current + 1 >= 4;
-
-      setCurrentRatingTarget((prev) => (prev === "self" ? "partner" : "self"));
+      textPromptCountRef.current += 1;
+      trialNumber.current += 1;
       setTextInput("");
       setNumberScale(undefined);
       setAttemptedSubmit(false);
       setShowToggleScreen(false);
-      setResetTrigger((prev) => prev + 1);
-      nextStopTimeSecRef.current += 150;
-      textPromptCountRef.current += 1;
-      trialNumber.current += 1;
       onProgress?.(
         textPromptCountRef.current,
         DYAD_BLOCKS,
         `Block ${Math.min(textPromptCountRef.current + 1, DYAD_BLOCKS)} of ${DYAD_BLOCKS}`
       );
 
-      if (isLastBlock) {
-        // Last block complete — end session without showing another transition screen.
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-        const buffer = sampleBufferRef.current;
-        if (buffer.length > 0) {
-          invoke("write_csv_ratings", { path: csvFilePath, contents: buffer }).catch(
-            handleCsvError
-          );
-          sampleBufferRef.current = [];
-        }
-        if (videoRef.current) videoRef.current.pause();
-        setVideoEnded(true);
-        callOnComplete();
-      } else {
-        // Show the between-block transition prompt.
-        setShowTransitionScreen(true);
+      // This was the writing screen that follows the end of the video, or the
+      // last of the four blocks — either way the task is over.
+      if (awaitingFinalRatingRef.current || textPromptCountRef.current >= DYAD_BLOCKS) {
+        finishTask();
+        return;
       }
+
+      setCurrentRatingTarget((prev) => (prev === "self" ? "partner" : "self"));
+      setResetTrigger((prev) => prev + 1);
+      nextStopTimeSecRef.current += 150;
+      // Show the between-block transition prompt.
+      setShowTransitionScreen(true);
     } catch (err) {
       handleCsvError(err);
     }
@@ -354,13 +366,21 @@ function DyadTaskMain({
 
   const handleDismissIncomplete = () => setAttemptedSubmit(false);
 
+  // Stable identity: Slider's 100 ms sampling loop must not be torn down and
+  // restarted because this component re-rendered.
+  const handleSliderSample = useCallback((value: number) => {
+    latestSliderRef.current = value;
+  }, []);
+
   const handleTransitionContinue = () => setShowTransitionScreen(false);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
+      // The perspective announcement holds itself open for a few seconds and
+      // owns its own key handling — see TransitionScreen. Advancing it from
+      // here as well would let a keypress skip straight past it.
       if (showTransitionScreen) {
         event.preventDefault();
-        handleTransitionContinue();
       } else if (showToggleScreen && event.key === "Tab") {
         event.preventDefault();
         handleTabSubmit();
@@ -412,19 +432,36 @@ function DyadTaskMain({
           groupSize={4}
           instructions={[
             "In this part of the study, you will watch the video recording of the conversation you just had.",
-            "We are interested in two things:\n\t1. How you were feeling during the conversation.\n\t2. How you think your partner was feeling during the \tconversation.",
-            "Each block will tell you whether to focus on your own feelings or your partner's feelings.",
-            "As the video plays, continuously move the slider to indicate how positive or negative you OR your partner felt at that moment during the conversation.",
+            "We are interested in two things:\n\t1. How YOU were feeling during the conversation.\n\t2. How YOUR PARTNER was feeling during the \tconversation.",
+            "The video is split into parts. Before each part, the screen will tell you whether to focus on YOUR OWN feelings or YOUR PARTNER'S feelings, and a reminder stays in the corner of the screen while you watch.",
+            "As the video plays, continuously move the slider to indicate how positive or negative YOU or YOUR PARTNER felt at that moment during the conversation.",
             "At certain points, you will be asked to write a short response and make ratings about how you or your partner felt during the part of the conversation you just watched.",
           ]}
         />
       ) : (
         <div className="h-full w-full flex flex-col relative">
+          {/* Perspective reminder, on screen for the whole block. Randy,
+              2026-07-30: participants were losing track of whose feelings they
+              were rating, and by the middle of the task were no longer
+              re-reading the prompt at all. */}
+          {!showToggleScreen && !showTransitionScreen && (
+            <div className="absolute top-6 right-8 z-20 border-2 border-white bg-black px-5 py-2.5 text-center">
+              <span className="block text-gray-400 text-xs uppercase tracking-widest">
+                You are rating
+              </span>
+              <span className="block text-white text-xl font-bold">
+                {currentRatingTarget === "self" ? "YOUR OWN FEELINGS" : "YOUR PARTNER'S FEELINGS"}
+              </span>
+            </div>
+          )}
+
           <div className="flex-1 flex flex-col items-center justify-center bg-black">
             <p className="text-center text-white mt-20 mb-7 text-2xl">
-              How positive or negative did
-              {currentRatingTarget === "self" ? " YOU" : " YOUR PARTNER"} feel
-              during this moment in the conversation?
+              How positive or negative did{" "}
+              <span className="font-bold underline">
+                {currentRatingTarget === "self" ? "YOU" : "YOUR PARTNER"}
+              </span>{" "}
+              feel during this moment in the conversation?
             </p>
             <VideoPlayer
               ref={videoRef}
@@ -433,19 +470,11 @@ function DyadTaskMain({
             />
           </div>
           {videoSrc && !showToggleScreen && !videoEnded && (
-            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-full max-w-5xl cursor-none">
-              <div className="bg-black border border-white p-6">
-                <Slider
-                  resetTrigger={resetTrigger}
-                  onSample={(v) => {
-                    latestSliderRef.current = v;
-                    setLatestSlider(v);
-                  }}
-                />
-              </div>
+            <div className="absolute bottom-0 left-0 w-full cursor-none border-t border-white bg-black px-10 pt-6 pb-8">
+              <Slider resetTrigger={resetTrigger} onSample={handleSliderSample} />
             </div>
           )}
-          {showToggleScreen && !videoEnded && (
+          {showToggleScreen && (!videoEnded || awaitingFinalRating) && (
             <div className="absolute inset-0 z-10">
               <RatingOverlay
                 currentRatingTarget={currentRatingTarget}
@@ -454,6 +483,7 @@ function DyadTaskMain({
                 numberScale={numberScale}
                 setNumberScale={setNumberScale}
                 attemptedSubmit={attemptedSubmit}
+                isFinal={awaitingFinalRating}
                 onConfirmIncomplete={handleConfirmIncomplete}
                 onDismissIncomplete={handleDismissIncomplete}
               />

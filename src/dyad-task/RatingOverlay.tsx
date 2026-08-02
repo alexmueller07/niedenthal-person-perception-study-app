@@ -8,6 +8,8 @@ interface RatingOverlayProps {
   numberScale: number | undefined;
   setNumberScale: (v: number | undefined) => void;
   attemptedSubmit: boolean;
+  /** True on the screen that follows the end of the video. */
+  isFinal?: boolean;
   onConfirmIncomplete: () => void;
   onDismissIncomplete: () => void;
 }
@@ -19,15 +21,23 @@ function RatingOverlay({
   numberScale,
   setNumberScale,
   attemptedSubmit,
+  isFinal = false,
   onConfirmIncomplete,
   onDismissIncomplete,
 }: RatingOverlayProps) {
   return (
     <div className="h-full w-full flex flex-col items-center justify-center bg-black cursor-auto">
       <div className=" max-w-2xl mx-auto px-8">
+        {isFinal && (
+          <p className="text-gray-400 text-lg uppercase tracking-widest mb-4">
+            Last part of the video
+          </p>
+        )}
         <h1 className="text-white text-2xl mb-8">
           Please use the box below to write about how{" "}
-          {currentRatingTarget === "self" ? "YOU were" : "YOUR PARTNER was"}{" "}
+          <span className="font-bold">
+            {currentRatingTarget === "self" ? "YOU were" : "YOUR PARTNER was"}
+          </span>{" "}
           feeling during the part of the conversation you just watched.
         </h1>
 
@@ -43,10 +53,14 @@ function RatingOverlay({
           <div>
             <label className="block text-white text-2xl mb-6 mt-32">
               To what extent do you feel that{" "}
-              {currentRatingTarget === "self" ? "YOUR PARTNER " : "YOU "}{" "}
+              <span className="font-bold">
+                {currentRatingTarget === "self" ? "YOUR PARTNER" : "YOU"}
+              </span>{" "}
               elicited these feelings in{" "}
-              {currentRatingTarget === "self" ? "YOU " : "YOUR PARTNER "}?
-              Click the corresponding number.
+              <span className="font-bold">
+                {currentRatingTarget === "self" ? "YOU" : "YOUR PARTNER"}
+              </span>
+              ? Click the corresponding number.
             </label>
             <div className="flex justify-between items-center">
               <span className="text-white text-xl">Not at all</span>
@@ -78,9 +92,6 @@ function RatingOverlay({
             isOpen={attemptedSubmit}
             onClose={onDismissIncomplete}
             onConfirm={onConfirmIncomplete}
-            message="You haven't answered all the questions. Are you sure you want to go on?"
-            confirmText="Continue"
-            cancelText="Close"
           />
         </div>
       </div>
