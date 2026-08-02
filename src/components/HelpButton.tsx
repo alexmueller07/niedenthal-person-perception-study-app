@@ -15,11 +15,23 @@ import { useState } from "react";
 interface HelpButtonProps {
   /** Called when the participant confirms they want help. */
   onRequestHelp: () => void;
+  /**
+   * Called when the participant takes the request back. Randy, 2026-07-30:
+   * "Once the RA is alerted, though, we'll be able to figure out how to turn it
+   * off?" — the researcher can always clear it from the dashboard, and now the
+   * participant can withdraw it themselves rather than sitting there waiting
+   * for help they no longer need.
+   */
+  onCancelHelp: () => void;
   /** True while a request is outstanding (the researcher has not cleared it). */
   pending: boolean;
 }
 
-export default function HelpButton({ onRequestHelp, pending }: HelpButtonProps) {
+export default function HelpButton({
+  onRequestHelp,
+  onCancelHelp,
+  pending,
+}: HelpButtonProps) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   // `pending` is the only source of truth for the notice — the parent sets it
@@ -34,8 +46,15 @@ export default function HelpButton({ onRequestHelp, pending }: HelpButtonProps) 
     <>
       <div className="fixed bottom-8 left-8 z-40 cursor-auto">
         {pending ? (
-          <div className="px-4 py-2 border border-gray-500 text-gray-300 text-sm bg-black">
-            Researcher notified — please wait
+          <div className="flex items-center gap-3 px-4 py-2 border border-gray-500 bg-black">
+            <span className="text-gray-300 text-sm">Researcher notified — please wait</span>
+            <button
+              type="button"
+              onClick={onCancelHelp}
+              className="text-gray-400 text-sm underline hover:text-white transition-colors"
+            >
+              I&apos;m okay now
+            </button>
           </div>
         ) : (
           <button

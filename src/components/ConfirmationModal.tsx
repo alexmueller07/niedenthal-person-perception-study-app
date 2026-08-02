@@ -1,3 +1,12 @@
+// One wording for "you left something blank", used everywhere.
+//
+// Randy, 2026-07-30: the video task's version ("Hey, you didn't answer every
+// question on this screen…") read as too informal next to the questionnaires'.
+// Rather than fix that one string, the formal wording is the component's default
+// so a new page gets it without anyone having to remember.
+export const INCOMPLETE_MESSAGE =
+  "There are unanswered questions on this page. Would you like to continue?";
+
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -13,9 +22,9 @@ export default function ConfirmationModal({
   onClose,
   onConfirm,
   title,
-  message,
-  confirmText = "Proceed",
-  cancelText = "Cancel",
+  message = INCOMPLETE_MESSAGE,
+  confirmText = "Continue",
+  cancelText = "Go back",
 }: ConfirmationModalProps) {
   if (!isOpen) return null;
 
@@ -25,9 +34,7 @@ export default function ConfirmationModal({
         {title && (
           <h2 className="text-white text-xl font-bold mb-4">{title}</h2>
         )}
-        <p className="text-white text-lg mb-6">
-          {message ?? "You haven't answered all the questions. Can you confirm you want to proceed?"}
-        </p>
+        <p className="text-white text-lg mb-6">{message}</p>
         <div className="flex space-x-4 justify-between">
           <button
             onClick={onClose}

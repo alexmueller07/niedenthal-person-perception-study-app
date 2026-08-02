@@ -52,9 +52,20 @@ export default function ProgressPanel({ progress, onClearHelp }: ProgressPanelPr
 
       {needHelp.length > 0 && (
         <div className="border border-red-500 bg-red-950/40 p-4 mb-6">
-          <h3 className="text-red-300 text-lg font-bold mb-2">
-            Help requested ({needHelp.length})
-          </h3>
+          <div className="flex items-baseline justify-between mb-2">
+            <h3 className="text-red-300 text-lg font-bold">
+              Help requested ({needHelp.length})
+            </h3>
+            {needHelp.length > 1 && (
+              <button
+                type="button"
+                onClick={() => needHelp.forEach(onClearHelp)}
+                className="text-red-300 text-sm underline hover:text-white transition-colors"
+              >
+                clear all
+              </button>
+            )}
+          </div>
           {needHelp.map((entry) => (
             <div
               key={entry.email}

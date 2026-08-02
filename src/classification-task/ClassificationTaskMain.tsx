@@ -1,7 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { csvEscape } from "../utils/csv";
-import type { FormData } from "../App";
+import { useEffect, useState } from "react";
+import type { TransitionsWriter } from "../utils/transitions";
 import VideoTaskMain from "../video-task/VideoTaskMain";
 import PartnerHistory from "./PartnerHistory";
 import SelfFrequency from "./SelfFrequency";
@@ -15,8 +13,6 @@ import StudyFeedback from "./StudyFeedback";
 import Autism from "./Autism";
 import type { ClassificationStepData } from "./types";
 import { shuffle } from "../utils/shuffle";
-
-const SOFTWARE_VERSION = "2.0.0";
 
 // Human-readable names for the questionnaire steps, shown on the researcher
 // dashboard so "where is this participant" is answerable at a glance.
@@ -35,8 +31,10 @@ const STEP_LABELS: Record<string, string> = {
 };
 
 interface ClassificationTaskMainProps {
-  formData: FormData;
-  csvFilePath: string;
+  /** Yokes the video set across both members of the dyad. */
+  dyadId: string;
+  /** Session-wide writer for transitions.csv — see utils/transitions.ts. */
+  writeRow: TransitionsWriter;
   onComplete?: () => void;
   onCsvError?: (msg: string) => void;
   /** Reports progress for the researcher dashboard. */
@@ -49,48 +47,12 @@ interface ClassificationTaskMainProps {
 }
 
 function ClassificationTaskMain({
-  formData,
-  csvFilePath,
+  dyadId,
+  writeRow: writeCSVRow,
   onComplete,
   onCsvError,
   onProgress,
 }: ClassificationTaskMainProps) {
-  const trialNumber = useRef<number>(1);
-
-  const writeCSVRow = useCallback(async (
-    ratingTask: string,
-    subTask: string,
-    emotion1: string = "",
-    emotion2: string = "",
-    ratingPerson: string = "",
-    response: number | string = ""
-  ) => {
-    const row = [
-      formData.dyadId,
-      formData.participantId,
-      formData.partnerId,
-      formData.computer,
-      formData.subjectInitials,
-      formData.raName,
-      formData.sessionTime,
-      formData.sessionDate,
-      new Date().toISOString(),
-      ratingTask,
-      subTask,
-      emotion1,
-      emotion2,
-      ratingPerson,
-      response,
-      trialNumber.current,
-      SOFTWARE_VERSION,
-    ]
-      .map(csvEscape)
-      .join(",");
-
-    await invoke("write_csv_transitions", { path: csvFilePath, contents: [row] });
-    trialNumber.current += 1;
-  }, [csvFilePath, formData]);
-
   const handleCsvError = (err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("CSV write failed:", msg);
@@ -116,7 +78,7 @@ function ClassificationTaskMain({
       "demographics",
       "studyFeedback",
     ]);
-  }, [csvFilePath]);
+  }, []);
 
 
   const handleVideoTaskComplete = () => {
@@ -267,7 +229,7 @@ function ClassificationTaskMain({
   if (currentStep === "videoTask") {
     return (
       <VideoTaskMain
-        dyadId={formData.dyadId}
+        dyadId={dyadId}
         writeRow={writeCSVRow}
         onProgress={(done, total, label) => onProgress?.("video", done, total, label)}
         onComplete={handleVideoTaskComplete}

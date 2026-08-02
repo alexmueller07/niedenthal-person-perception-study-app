@@ -51,6 +51,13 @@ export default function StimulusPlayer({ src, onWatched, compact = false }: Stim
     const el = videoRef.current;
     if (!el) return;
     el.currentTime = 0;
+    // Explicit, every time. Prior reported silent clips at the 2026-07-29
+    // review: a webview that has ever blocked sound-on playback can leave the
+    // element muted, and playback then "works" with no audio and no error.
+    // Playback only ever starts from this button press, so the gesture that
+    // permits sound is always present.
+    el.muted = false;
+    el.volume = 1;
     setEnded(false);
     void el.play().then(
       () => {
@@ -78,6 +85,9 @@ export default function StimulusPlayer({ src, onWatched, compact = false }: Stim
   return (
     <div className="flex flex-col items-center w-full">
       <div className="relative w-full flex items-center justify-center">
+        {/* Sized to fill the page rather than a strip in the middle of it
+            (Ben, 2026-07-29: the clip took the middle third while the rating
+            page took nearly the whole width). */}
         <video
           ref={videoRef}
           src={src}
@@ -85,7 +95,7 @@ export default function StimulusPlayer({ src, onWatched, compact = false }: Stim
           onEnded={handleEnded}
           onError={() => setLoadError(true)}
           className={`bg-black border border-gray-600 object-contain ${
-            compact ? "max-h-[45vh] w-full" : "max-h-[62vh] w-full"
+            compact ? "max-h-[55vh] w-full" : "max-h-[72vh] w-full"
           }`}
         />
 

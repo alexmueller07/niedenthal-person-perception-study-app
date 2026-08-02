@@ -1,13 +1,51 @@
 import { useState } from "react";
-import type { AppSettings } from "../utils/settings";
+import type { AppSettings, VideoRatingMode } from "../utils/settings";
 
-// The two machine-level folders the lab sets once, on the dashboard rather than
-// in the participant flow — an RA setting up a session should never have to
-// think about them.
+// Everything the lab sets once per machine, on the dashboard rather than in the
+// participant flow — an RA setting up a session should never have to think
+// about any of it.
+//
+// Two folders (where the clips are, where the tracking files go) and two
+// switches for how the video task runs. The switches live here rather than in
+// the source so the shape of the task can be changed and changed back in a
+// meeting without a rebuild.
 
 interface FolderSettingsProps {
   settings: AppSettings;
   onChange: (settings: AppSettings) => void;
+}
+
+function Choice({
+  label,
+  help,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  help: string;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      className={`flex-1 border p-4 text-left transition-colors ${
+        selected ? "border-white bg-gray-800" : "border-gray-600 hover:border-gray-400"
+      }`}
+    >
+      <span className="flex items-center gap-2">
+        <span
+          className={`h-4 w-4 shrink-0 rounded-full border-2 border-white ${
+            selected ? "bg-white" : "bg-transparent"
+          }`}
+        />
+        <span className="text-white text-lg">{label}</span>
+      </span>
+      <span className="mt-2 block text-gray-400 text-sm">{help}</span>
+    </button>
+  );
 }
 
 function FolderRow({
@@ -109,6 +147,61 @@ export default function FolderSettings({ settings, onChange }: FolderSettingsPro
         Changing the tracking folder takes effect immediately for new writes.
         Restart the app afterwards so everything is read from the same place.
       </p>
+
+      <div className="border-t border-gray-700 pt-6 space-y-6">
+        <h2 className="text-white text-xl font-bold">How the video task runs</h2>
+
+        <div>
+          <label className="block text-white text-lg mb-3">Rating perspectives</label>
+          <div className="flex gap-3">
+            <Choice
+              label="One at a time (current protocol)"
+              help="Three passes over the clips: once for the participant, once for their
+                    partner, once for an average UW–Madison student, in random order."
+              selected={settings.videoRatingMode === "separate"}
+              onSelect={() => onChange({ ...settings, videoRatingMode: "separate" })}
+            />
+            <Choice
+              label="All three together"
+              help="One pass. Every feeling is rated for all three people on the same
+                    page. Faster, but the three ratings are visible to each other."
+              selected={settings.videoRatingMode === "combined"}
+              onSelect={() =>
+                onChange({ ...settings, videoRatingMode: "combined" as VideoRatingMode })
+              }
+            />
+          </div>
+          <p className="text-gray-400 text-sm mt-2">
+            Both modes write the same rows to the data file, and every session
+            records which one it ran in. Set this the same way on both machines of a
+            dyad.
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-white text-lg mb-3">Rewatching clips</label>
+          <div className="flex gap-3">
+            <Choice
+              label="Watch once, then optional"
+              help="The first viewing of a clip is required. After that the participant
+                    can replay it but does not have to."
+              selected={!settings.requireRewatch}
+              onSelect={() => onChange({ ...settings, requireRewatch: false })}
+            />
+            <Choice
+              label="Watch again every time"
+              help="Every clip must be played to the end in every pass. Roughly triples
+                    the viewing time."
+              selected={settings.requireRewatch}
+              onSelect={() => onChange({ ...settings, requireRewatch: true })}
+            />
+          </div>
+          <p className="text-gray-400 text-sm mt-2">
+            Only applies to &ldquo;one at a time&rdquo;. How many times a clip was
+            actually played before each rating is recorded either way.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

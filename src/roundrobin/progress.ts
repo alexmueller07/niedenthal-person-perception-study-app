@@ -25,6 +25,7 @@ import { normalizeEmail } from "./store";
 export const STUDY_STAGES = [
   { key: "checkin", label: "Checked in" },
   { key: "setup", label: "Researcher setup" },
+  { key: "postconv", label: "Post-conversation questions" },
   { key: "dyad", label: "Conversation rating" },
   { key: "video", label: "Video affective-response task" },
   { key: "questionnaires", label: "Questionnaires" },

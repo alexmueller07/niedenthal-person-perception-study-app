@@ -25,6 +25,8 @@ interface VideoRatingPageProps {
   src: string;
   /** Grammatical phrase for the rated target: "you", "your partner", … */
   targetPhrase: string;
+  /** The same target in caps, for the banner: "YOUR PARTNER". */
+  targetCaps: string;
   /** True for the self block — changes tense ("did this video make you feel"). */
   isSelf: boolean;
   positionLabel: string;
@@ -36,6 +38,7 @@ export default function VideoRatingPage({
   emotions,
   src,
   targetPhrase,
+  targetCaps,
   isSelf,
   positionLabel,
   onSubmit,
@@ -79,21 +82,24 @@ export default function VideoRatingPage({
   };
 
   const intensityPrompt = isSelf
-    ? "How strongly did this video make you feel each of the following?"
-    : `How strongly do you think this video would make ${targetPhrase} feel each of the following?`;
+    ? "How strongly did this video make YOU feel each of the following?"
+    : `How strongly do you think this video would make ${targetPhrase.toUpperCase()} feel each of the following?`;
 
   return (
     <div className="min-h-full w-full flex flex-col bg-black pb-24">
       <div className="sticky top-0 z-40 w-full bg-black border-b border-white px-8 py-4">
         <h2 className="text-white text-2xl font-bold text-center">
-          For each video, rate how strongly it evokes each feeling, and how
-          confident you are in that rating. (1 = Not at all, 100 = Extremely)
+          For each video clip, rate how strongly it evokes each feeling, and how
+          confident you are in your answer. (1 = Not at all, 100 = Extremely)
         </h2>
       </div>
 
-      <div className="flex-1 flex flex-col items-center px-8 py-4 w-10/12 mx-auto">
+      <div className="flex-1 flex flex-col items-center px-8 pt-16 pb-4 w-10/12 mx-auto">
         <div className="w-full flex items-center justify-between mb-4">
           <span className="text-gray-400 text-base">{positionLabel}</span>
+          <span className="border border-white px-4 py-1.5 text-white text-base">
+            You are rating: <span className="font-bold">{targetCaps}</span>
+          </span>
           <button
             type="button"
             onClick={() => setShowReplay(true)}
@@ -122,7 +128,7 @@ export default function VideoRatingPage({
 
           <div>
             <p className="text-white text-xl mb-2">
-              How confident are you in each of the ratings above?
+              How confident are you in each of your answers above?
             </p>
             <MatrixSlider
               leftLabel="Not at all confident"
@@ -152,7 +158,7 @@ export default function VideoRatingPage({
 
       {showReplay && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center px-8">
-          <div className="bg-black border border-white p-6 max-w-4xl w-full">
+          <div className="bg-black border border-white p-6 max-w-5xl w-full">
             <StimulusPlayer
               src={src}
               compact
@@ -175,9 +181,6 @@ export default function VideoRatingPage({
         isOpen={showIncomplete}
         onClose={() => setShowIncomplete(false)}
         onConfirm={submit}
-        message="Hey, you didn't answer every question on this screen. Are you sure you want to continue?"
-        confirmText="Continue anyway"
-        cancelText="Go back"
       />
     </div>
   );

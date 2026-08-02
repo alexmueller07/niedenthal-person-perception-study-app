@@ -3,11 +3,14 @@ import Instructions from "../dyad-task/Instructions";
 import VideoWatchPage from "./VideoWatchPage";
 import VideoRatingPage from "./VideoRatingPage";
 import type { VideoRating } from "./VideoRatingPage";
+import CombinedRatingPage from "./CombinedRatingPage";
+import type { CombinedRating } from "./CombinedRatingPage";
 import VideoSelectionPage from "./VideoSelectionPage";
 import type { VideoSelectionResult } from "./VideoSelectionPage";
 import type { WatchStats } from "./StimulusPlayer";
 import { SET_ASSIGNMENT_METHOD, assignSet, findVideo, resolveVideoSrc } from "./videos";
-import { loadSettings } from "../utils/settings";
+import { EMPTY_SETTINGS, loadSettings } from "../utils/settings";
+import type { AppSettings } from "../utils/settings";
 import { shuffle } from "../utils/shuffle";
 
 // Video affective-response task.
@@ -18,6 +21,12 @@ import { shuffle } from "../utils/shuffle";
 // randomized within a target block. What changed is the item — a film clip
 // instead of a written situation — and the scale, 1-100 instead of 1-7.
 //
+// Two rating modes ship (see VideoRatingMode in utils/settings.ts):
+//   separate — three passes over the clips, one perspective at a time. Default.
+//   combined — one pass, all three perspectives rated on the same page.
+// The machinery below is shared; the mode only decides how many passes there
+// are and which rating page is shown.
+//
 // Every randomization here (set, target order, clip order, emotion order) is
 // written to the data file, because a randomization that is not recorded cannot
 // be reproduced in analysis.
@@ -25,32 +34,41 @@ import { shuffle } from "../utils/shuffle";
 /** Kept identical to the scenario task so `ratingPerson` stays comparable. */
 const RATING_PEOPLE = ["yourself", "your partner", "an average UW-Madison student"];
 
-/**
- * When true, every clip must be watched to the end in every target block. When
- * false, a clip already watched in an earlier block can be continued past
- * without a rewatch (the participant can still replay it).
- *
- * True, settled by Alex on 2026-07-23: a rating that follows a fresh viewing and
- * one made from memory three blocks later are not the same measurement. Costs
- * roughly three times the viewing time — flip to false only if pilot timing
- * pushes the session past an hour, and tell Randy if you do.
- */
-const REQUIRE_FULL_WATCH_EACH_BLOCK = true;
-
-const VIDEO_INSTRUCTIONS = [
-  "In this part of the study, you will watch a series of short videos.",
-  "After each video, you will rate how strongly it evokes three different feelings, on a scale from 1 (Not at all) to 100 (Extremely).",
-  "For each feeling, you will also rate how confident you are in that rating, again from 1 to 100.",
-  "You will make these ratings three times: once for yourself, once for your partner, and once for an average UW-Madison student.",
-  "The three people will be presented in random order, and you will see the same videos each time.",
-  "Please watch each video all the way through before you make your ratings.",
-  "We ask that you answer each question efficiently in order to keep your participation time within one hour.",
-];
-
 const targetPhrase = (person: string): string => (person === "yourself" ? "you" : person);
 
-const targetReminder = (person: string): string =>
-  person === "yourself" ? "Rating: yourself" : `Rating: ${person}`;
+/** Uppercase perspective label. The group asked for these to stand out. */
+const targetCaps = (person: string): string => {
+  if (person === "yourself") return "YOURSELF";
+  if (person === "your partner") return "YOUR PARTNER";
+  return "AN AVERAGE UW–MADISON STUDENT";
+};
+
+function instructionsFor(settings: AppSettings): string[] {
+  const shared = [
+    "In this part of the study, you will watch a series of short videos.",
+    "After each video, you will rate how strongly it evokes three different feelings, on a scale from 1 (Not at all) to 100 (Extremely).",
+    "For each feeling, you will also rate how confident you are in your answer, again from 1 to 100.",
+  ];
+
+  if (settings.videoRatingMode === "combined") {
+    return [
+      ...shared,
+      "You will make each of these ratings for three people: for YOURSELF, for YOUR PARTNER, and for AN AVERAGE UW–MADISON STUDENT — all on the same screen.",
+      "Please watch each video all the way through before you make your ratings. You can replay a video at any time.",
+      "We ask that you answer each question efficiently in order to keep your participation time within one hour.",
+    ];
+  }
+
+  return [
+    ...shared,
+    "You will make these ratings three times: once for YOURSELF, once for YOUR PARTNER, and once for AN AVERAGE UW–MADISON STUDENT.",
+    "The three people will be presented in random order, and you will see the same videos each time.",
+    settings.requireRewatch
+      ? "Please watch each video all the way through before you make your ratings."
+      : "Please watch each video all the way through the first time. After that you do not have to watch it again, but you can replay it whenever you want to.",
+    "We ask that you answer each question efficiently in order to keep your participation time within one hour.",
+  ];
+}
 
 export type VideoTaskWriteRow = (
   ratingTask: string,
@@ -78,7 +96,7 @@ export default function VideoTaskMain({
   onComplete,
   onCsvError,
 }: VideoTaskMainProps) {
-  const [stimulusDir, setStimulusDir] = useState<string | null>(null);
+  const [settings, setSettings] = useState<AppSettings>(EMPTY_SETTINGS);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   const [phase, setPhase] = useState<"instructions" | "trials" | "transition" | "selection">(
@@ -102,8 +120,13 @@ export default function VideoTaskMain({
   const assignmentLoggedRef = useRef(false);
   const loggedOrdersRef = useRef<Set<number>>(new Set());
 
-  const totalTrials = people.length * set.videoIds.length;
+  const combined = settings.videoRatingMode === "combined";
+  /** One pass over the clips when combined, three when separate. */
+  const passes = combined ? 1 : people.length;
+  const totalTrials = passes * set.videoIds.length;
   const trialsDone = targetIndex * set.videoIds.length + trialIndex;
+
+  const instructions = useMemo(() => instructionsFor(settings), [settings]);
 
   const handleError = useCallback(
     (err: unknown) => {
@@ -115,20 +138,21 @@ export default function VideoTaskMain({
 
   useEffect(() => {
     void loadSettings().then((s) => {
-      setStimulusDir(s.stimulusDir);
+      setSettings(s);
       setSettingsLoaded(true);
     });
   }, []);
 
   const srcFor = useCallback(
-    (id: string) => resolveVideoSrc(id, stimulusDir),
-    [stimulusDir]
+    (id: string) => resolveVideoSrc(id, settings.stimulusDir),
+    [settings.stimulusDir]
   );
 
   // Record the draw once, before any rating rows, so the data file always says
-  // which set the participant saw and how it was chosen.
+  // which set the participant saw, how it was chosen, and which rating mode the
+  // session ran in.
   useEffect(() => {
-    if (assignmentLoggedRef.current) return;
+    if (!settingsLoaded || assignmentLoggedRef.current) return;
     assignmentLoggedRef.current = true;
     void (async () => {
       try {
@@ -136,11 +160,20 @@ export default function VideoTaskMain({
         await writeRow("video_task", "set_assignment_method", "", "", "", SET_ASSIGNMENT_METHOD);
         await writeRow("video_task", "set_contents", "", "", "", set.videoIds.join(";"));
         await writeRow("video_task", "target_order", "", "", "", people.join(";"));
+        await writeRow("video_task", "rating_mode", "", "", "", settings.videoRatingMode);
+        await writeRow(
+          "video_task",
+          "require_rewatch",
+          "",
+          "",
+          "",
+          String(settings.requireRewatch)
+        );
       } catch (err) {
         handleError(err);
       }
     })();
-  }, [set, people, writeRow, handleError]);
+  }, [settingsLoaded, settings, set, people, writeRow, handleError]);
 
   // Record each block's clip order the first time that block starts.
   useEffect(() => {
@@ -151,31 +184,33 @@ export default function VideoTaskMain({
       "video_order",
       "",
       "",
-      people[targetIndex],
+      combined ? "all" : people[targetIndex],
       orderByTarget[targetIndex].join(";")
     ).catch(handleError);
-  }, [phase, targetIndex, people, orderByTarget, writeRow, handleError]);
+  }, [phase, targetIndex, combined, people, orderByTarget, writeRow, handleError]);
 
   useEffect(() => {
     const detail =
       phase === "instructions"
         ? "Instructions"
         : phase === "selection"
-        ? "Choosing videos to share"
-        : `Video ${trialIndex + 1} of ${set.videoIds.length} · rating ${people[targetIndex]}`;
+          ? "Choosing videos to share"
+          : combined
+            ? `Video ${trialIndex + 1} of ${set.videoIds.length}`
+            : `Video ${trialIndex + 1} of ${set.videoIds.length} · rating ${people[targetIndex]}`;
     onProgress?.(trialsDone, totalTrials + 1, detail);
-  }, [phase, trialIndex, targetIndex, trialsDone, totalTrials, people, set, onProgress]);
+  }, [phase, trialIndex, targetIndex, trialsDone, totalTrials, combined, people, set, onProgress]);
 
   // Instruction screens advance on any key, matching the rest of the app.
   useEffect(() => {
     if (phase !== "instructions") return;
     const onKeyDown = () => {
-      if (instructionIndex + 1 >= VIDEO_INSTRUCTIONS.length) setPhase("trials");
+      if (instructionIndex + 1 >= instructions.length) setPhase("trials");
       else setInstructionIndex((i) => i + 1);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [phase, instructionIndex]);
+  }, [phase, instructionIndex, instructions.length]);
 
   const currentTarget = people[targetIndex];
   const currentVideoId = orderByTarget[targetIndex]?.[trialIndex];
@@ -192,14 +227,15 @@ export default function VideoTaskMain({
   const handleWatchContinue = async () => {
     if (!currentVideoId) return;
     const stats = watchStatsRef.current;
+    const person = combined ? "all" : currentTarget;
     try {
-      await writeRow("video_affect", currentVideoId, "", "watch_plays", currentTarget, stats.plays);
+      await writeRow("video_affect", currentVideoId, "", "watch_plays", person, stats.plays);
       await writeRow(
         "video_affect",
         currentVideoId,
         "",
         "first_watch_ms",
-        currentTarget,
+        person,
         stats.firstWatchMs ?? ""
       );
     } catch (err) {
@@ -207,6 +243,21 @@ export default function VideoTaskMain({
     }
     watchStatsRef.current = { plays: 0, firstWatchMs: null };
     setPage("rate");
+  };
+
+  /** Shared tail of both rating pages: advance, or move on to the next phase. */
+  const advanceAfterRating = () => {
+    const lastTrial = trialIndex + 1 >= orderByTarget[targetIndex].length;
+    if (!lastTrial) {
+      setTrialIndex((i) => i + 1);
+      setPage("watch");
+      return;
+    }
+    if (targetIndex + 1 < passes) {
+      setPhase("transition");
+      return;
+    }
+    setPhase("selection");
   };
 
   const handleRatingSubmit = async (ratings: VideoRating[], replays: number) => {
@@ -222,18 +273,23 @@ export default function VideoTaskMain({
     } catch (err) {
       handleError(err);
     }
+    advanceAfterRating();
+  };
 
-    const lastTrial = trialIndex + 1 >= orderByTarget[targetIndex].length;
-    if (!lastTrial) {
-      setTrialIndex((i) => i + 1);
-      setPage("watch");
-      return;
+  const handleCombinedSubmit = async (ratings: CombinedRating[], replays: number) => {
+    if (!currentVideoId) return;
+    try {
+      // Same row shape as above — the person just varies within the page
+      // instead of within the block.
+      for (const r of ratings) {
+        await writeRow("video_affect", currentVideoId, r.emotion, "intensity", r.person, r.intensity);
+        await writeRow("video_affect", currentVideoId, r.emotion, "confidence", r.person, r.confidence);
+      }
+      await writeRow("video_affect", currentVideoId, "", "rating_page_replays", "all", replays);
+    } catch (err) {
+      handleError(err);
     }
-    if (targetIndex + 1 < people.length) {
-      setPhase("transition");
-      return;
-    }
-    setPhase("selection");
+    advanceAfterRating();
   };
 
   const handleTransitionContinue = () => {
@@ -247,9 +303,11 @@ export default function VideoTaskMain({
     try {
       await writeRow("video_selection", "for_partner", "", "", "", result.forPartner.join(";"));
       await writeRow("video_selection", "for_self", "", "", "", result.forSelf.join(";"));
+      await writeRow("video_selection", "for_average_student", "", "", "", result.forAverage.join(";"));
       await writeRow("video_selection", "presented_order", "", "", "", result.presentedOrder.join(";"));
       await writeRow("video_selection", "n_for_partner", "", "", "", result.forPartner.length);
       await writeRow("video_selection", "n_for_self", "", "", "", result.forSelf.length);
+      await writeRow("video_selection", "n_for_average_student", "", "", "", result.forAverage.length);
     } catch (err) {
       handleError(err);
     }
@@ -272,7 +330,7 @@ export default function VideoTaskMain({
           instructionIndex={instructionIndex}
           onBack={() => setInstructionIndex((i) => Math.max(0, i - 1))}
           groupSize={4}
-          instructions={VIDEO_INSTRUCTIONS}
+          instructions={instructions}
         />
       </div>
     );
@@ -283,11 +341,13 @@ export default function VideoTaskMain({
       <div className="min-h-screen w-full flex flex-col justify-center items-center bg-black overflow-hidden">
         <div className="max-w-4xl mx-auto text-center px-8">
           <h1 className="text-white text-2xl">Phase Complete!</h1>
-          <p className="text-white text-2xl pt-32">
-            You have completed all video ratings for {people[targetIndex]}.
+          <p className="text-white text-2xl pt-24">
+            You have completed all video ratings for{" "}
+            <span className="font-bold">{targetCaps(people[targetIndex])}</span>.
           </p>
-          <p className="text-white text-2xl pt-32">
-            You will now rate the same videos for {people[targetIndex + 1]}.
+          <p className="text-white text-2xl pt-24">
+            You will now rate the same videos for{" "}
+            <span className="font-bold underline">{targetCaps(people[targetIndex + 1])}</span>.
           </p>
           <button
             type="button"
@@ -321,16 +381,30 @@ export default function VideoTaskMain({
 
   const positionLabel = `Video ${trialIndex + 1} of ${orderByTarget[targetIndex].length}`;
 
-  return page === "watch" ? (
-    <VideoWatchPage
-      key={`watch-${targetIndex}-${trialIndex}`}
+  if (page === "watch") {
+    return (
+      <VideoWatchPage
+        key={`watch-${targetIndex}-${trialIndex}`}
+        src={srcFor(currentVideoId)}
+        positionLabel={positionLabel}
+        targetReminder={combined ? null : targetCaps(currentTarget)}
+        alreadyWatchedEarlier={watchedEver.current.has(currentVideoId)}
+        requireWatch={settings.requireRewatch}
+        onWatched={handleWatched}
+        onContinue={handleWatchContinue}
+      />
+    );
+  }
+
+  return combined ? (
+    <CombinedRatingPage
+      key={`rate-${trialIndex}`}
+      videoId={currentVideoId}
+      emotions={currentVideo.emotions}
+      people={people}
       src={srcFor(currentVideoId)}
       positionLabel={positionLabel}
-      targetReminder={targetReminder(currentTarget)}
-      alreadyWatchedEarlier={watchedEver.current.has(currentVideoId)}
-      requireWatch={REQUIRE_FULL_WATCH_EACH_BLOCK}
-      onWatched={handleWatched}
-      onContinue={handleWatchContinue}
+      onSubmit={handleCombinedSubmit}
     />
   ) : (
     <VideoRatingPage
@@ -339,6 +413,7 @@ export default function VideoTaskMain({
       emotions={currentVideo.emotions}
       src={srcFor(currentVideoId)}
       targetPhrase={targetPhrase(currentTarget)}
+      targetCaps={targetCaps(currentTarget)}
       isSelf={currentTarget === "yourself"}
       positionLabel={positionLabel}
       onSubmit={handleRatingSubmit}
