@@ -3,6 +3,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ParticipantForm from "./components/ParticipantForm";
 import DyadTaskMain from "./dyad-task/DyadTaskMain";
 import ClassificationTaskMain from "./classification-task/ClassificationTaskMain";
+import PostConversation from "./classification-task/PostConversation";
+import type { ClassificationStepData } from "./classification-task/types";
+import { createTransitionsWriter } from "./utils/transitions";
+import type { TransitionsWriter } from "./utils/transitions";
 import ErrorBanner from "./components/ErrorBanner";
 import AdminQuitModal from "./components/AdminQuitModal";
 import HelpButton from "./components/HelpButton";
@@ -43,10 +47,16 @@ function App() {
     sessionDate: "",
   });
 
-  const [selectedTask, setSelectedTask] = useState<"dyad" | "classification" | null>(null);
+  const [selectedTask, setSelectedTask] = useState<
+    "postConversation" | "dyad" | "classification" | null
+  >(null);
   const [dyadCsvFilePath, setDyadCsvFilePath] = useState<string>("");
-  const [classificationCsvFilePath, setClassificationCsvFilePath] = useState<string>("");
   const [completedTasks, setCompletedTasks] = useState({ dyad: false, classification: false });
+  // One writer for transitions.csv for the whole session, created once the save
+  // folder exists. Both the post-conversation questionnaire and the
+  // questionnaire task write through it, so the file's trial numbering stays a
+  // single sequence — see utils/transitions.ts.
+  const transitionsWriterRef = useRef<TransitionsWriter | null>(null);
   const [taskOrder, setTaskOrder] = useState<number>(0);
   const [csvError, setCsvError] = useState<string | null>(null);
   const [showAdminQuit, setShowAdminQuit] = useState<boolean>(false);
@@ -108,6 +118,16 @@ function App() {
     });
   };
 
+  // The participant withdrawing their own request. Resolving it (rather than
+  // erasing the request) keeps the fact that they asked in the progress file —
+  // an RA looking back at a session should still be able to see it happened.
+  const handleCancelHelp = () => {
+    const email = rrParticipant?.email;
+    if (!email) return;
+    setHelpPending(false);
+    writeProgress(email, { helpResolvedAt: new Date().toISOString() });
+  };
+
   // While a help request is outstanding, watch for the researcher clearing it
   // so the participant's "researcher notified" notice goes away on its own.
   useEffect(() => {
@@ -152,6 +172,17 @@ function App() {
         e.preventDefault();
         e.stopPropagation();
         setShowAdminQuit(true);
+        return;
+      }
+      // Restore fullscreen: Ctrl+Shift+F. The primary path is the OS-level
+      // shortcut registered in Rust; this is the in-page fallback, and the only
+      // one that exists in browser dev.
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "F" || e.key === "f")) {
+        e.preventDefault();
+        e.stopPropagation();
+        void invoke("enter_fullscreen").catch((err) =>
+          console.error("enter_fullscreen failed:", err)
+        );
         return;
       }
       if (isBlockedShortcut(e)) {
@@ -206,10 +237,13 @@ function App() {
       });
 
       setDyadCsvFilePath(`${basePath}/ratings.csv`);
-      setClassificationCsvFilePath(`${basePath}/transitions.csv`);
-      setSelectedTask("dyad");
+      transitionsWriterRef.current = createTransitionsWriter(
+        formData,
+        `${basePath}/transitions.csv`
+      );
+      setSelectedTask("postConversation");
       setTaskOrder(1);
-      reportProgress("dyad", 0, 4, "Instructions");
+      reportProgress("postconv", 0, 1, "Post-conversation questions");
     } catch (error) {
       console.error("Error setting up directory:", error);
       alert("Error setting up file directory. Please check the save folder path and try again.");
@@ -218,6 +252,34 @@ function App() {
 
   const handleFormChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // The post-conversation questionnaire writes one row per item, in the order
+  // presented. Item text goes in subTask (matching every other questionnaire in
+  // the file) and the stable item key in emotion1, so analysis can join on the
+  // key rather than on prose that may get reworded later.
+  const handlePostConversationComplete = async (data?: ClassificationStepData) => {
+    const write = transitionsWriterRef.current;
+    const responses = (data?.responses ?? {}) as Record<string, number>;
+    const order = (data?.order ?? []) as string[];
+    const labels = (data?.labels ?? {}) as Record<string, string>;
+    try {
+      for (const key of order) {
+        await write?.(
+          "post_conversation",
+          labels[key] ?? key,
+          key,
+          "",
+          "",
+          responses[key] ?? ""
+        );
+      }
+    } catch (err) {
+      console.error("Post-conversation write failed:", err);
+      setCsvError(`Write failed: ${err instanceof Error ? err.message : String(err)}`);
+    }
+    setSelectedTask("dyad");
+    reportProgress("dyad", 0, 4, "Instructions");
   };
 
   const handleDyadTaskComplete = () => {
@@ -259,7 +321,11 @@ function App() {
       {/* Participant help signal. Hidden during the continuous rating, where
           moving the pointer to a corner would be recorded as a slider value. */}
       {stage === "study" && rrParticipant && !cursorLocked && (
-        <HelpButton onRequestHelp={handleRequestHelp} pending={helpPending} />
+        <HelpButton
+          onRequestHelp={handleRequestHelp}
+          onCancelHelp={handleCancelHelp}
+          pending={helpPending}
+        />
       )}
 
       {stage === "signin" ? (
@@ -287,6 +353,8 @@ function App() {
             Please alert your researcher that you are finished.
           </p>
         </div>
+      ) : selectedTask === "postConversation" ? (
+        <PostConversation onContinue={handlePostConversationComplete} />
       ) : selectedTask === "dyad" ? (
         <DyadTaskMain
           formData={formData}
@@ -297,10 +365,10 @@ function App() {
           onProgress={(done, total, detail) => reportProgress("dyad", done, total, detail)}
           onCursorLock={setCursorLocked}
         />
-      ) : selectedTask === "classification" ? (
+      ) : selectedTask === "classification" && transitionsWriterRef.current ? (
         <ClassificationTaskMain
-          formData={formData}
-          csvFilePath={classificationCsvFilePath}
+          dyadId={formData.dyadId}
+          writeRow={transitionsWriterRef.current}
           onComplete={handleClassificationTaskComplete}
           onCsvError={handleCsvError}
           onProgress={(stage, done, total, detail) =>
