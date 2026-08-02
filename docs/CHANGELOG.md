@@ -6,6 +6,128 @@ to collect real participant data.
 
 ---
 
+## 2026-08-02 — Phase D: review feedback from the 2026-07-29 lab meeting
+
+Everything the group raised in the 2026-07-29 review thread (Randy, Ben, Reese,
+Prior, Eddy, Sarah), plus Randy's separate walkthrough notes.
+
+⚠️ **Measurement changes — need Randy's sign-off before live collection.** Three
+items on this list change what gets collected, not just how it looks: the new
+questionnaire at the front of the session, the writing + Likert screen that now
+always follows the video, and the rewatch requirement being off by default. All
+three are called out below.
+
+### 1. Post-conversation questionnaire, at the very front (Randy)
+
+⚠️ **New data.** Nine items on a 0–10 "Not at all / Very much" scale (affective
+agency, predictability, conversation flow, enjoyment, friendship, comfort,
+self-focus) plus the relative-talking item on its own −5 … +5 scale with a middle
+anchor. Wording and scales are the paper instrument's, unchanged.
+
+- **New:** `src/classification-task/PostConversation.tsx`,
+  `src/components/NumberScale.tsx`.
+- Runs **before the dyad task**, so before the participant has watched any of the
+  conversation back. Everything later in the session reshapes how the
+  conversation is remembered; these have to be asked first.
+- Item order is **fixed, not shuffled** — it mirrors a paper instrument the lab
+  has already run, and reordering would cost comparability for nothing.
+- Rows are written to `transitions.csv` as `post_conversation` with the question
+  text in `subTask` and a stable item key in `emotion1`, so analysis can join on
+  the key rather than on prose.
+- **New:** `src/utils/transitions.ts`. The `transitions.csv` writer moved out of
+  `ClassificationTaskMain` and is now created once per session in `App.tsx`.
+  Two independent writers would each have started `trialNumber` at 1, putting
+  the same number twice in one file with nothing to order them by.
+
+### 2. Conversation-rating (slider) task
+
+- ⚠️ **The writing screen and the Likert now always run at the end**, whatever
+  the video's length (Randy: a 3-minute clip ended the task with neither, so the
+  directions were never seen). Previously only a video long enough to reach a
+  150-second boundary got them. `DyadTaskMain` gained one end-of-video path
+  (`handleVideoFinished` → final rating screen → `finishTask`) shared by all
+  three end detectors, instead of three that each finished the task outright.
+- **Perspective switches are much harder to miss** (Randy, twice; Prior; Ben):
+  the announcement screen holds itself open for 6 seconds with a live countdown
+  before any key advances it, and a boxed "You are rating: YOUR PARTNER'S
+  FEELINGS" reminder now sits in the corner for the whole block. The parent
+  key handler no longer advances the announcement — it was skipping past the
+  screen it was meant to hold.
+- **Slider labels line up now** (Randy, "the words on the slider still aren't
+  centered"). The track lived in a 64rem box while the recorded value was a
+  fraction of the *whole window*, so nothing lined up with anything. The bar is
+  now full-width with the anchors at the true ends and a centre tick.
+  **The recorded number is unchanged** — `pointer X / window width × 100`, still
+  sampled every 100 ms. Only the drawing changed.
+- **Timing hardening** (not raised, found while in there). The 100 ms sampler was
+  being torn down and restarted on every parent re-render, and the parent was
+  re-rendering ten times a second because each sample was written to React
+  state. The latest value is a ref now, and the sampling loop holds `onSample` in
+  a ref so it survives re-renders untouched.
+- Instruction copy: "each block" → "each part of the video" (Reese), and
+  YOU / YOUR PARTNER in caps throughout (Reese, Ben, Prior).
+
+### 3. Video task
+
+- ⚠️ **Rewatching is no longer required** in the second and third blocks
+  (default changed). Ben, Sarah, Eddy and Prior all named the forced rewatch as
+  the tedious part. The first viewing of a clip is still compulsory and the clip
+  is still replayable on demand; `watch_plays` per trial still records whether a
+  rating followed a fresh viewing, so the difference stays visible in analysis.
+  Switchable from the dashboard.
+- **Combined rating mode is built, and off** (Randy: "I need confirmation
+  first"). **New:** `src/video-task/CombinedRatingPage.tsx` — one pass over the
+  clips, every emotion rated for all three people on the same page, grouped by
+  emotion. It writes exactly the same rows as the separate mode, and every
+  session records which mode it ran in (`rating_mode`). Ben's objection — that
+  seeing all three at once invites participants to norm their own answer against
+  the average student — is the reason it ships off rather than on.
+  Both switches live on the dashboard under "How the video task runs", so the
+  shape of the task can be changed and changed back in a meeting.
+- **Selection page**: third column, "The average UW–Madison student would like
+  this" (Randy). The heading talked about *sending and picking* videos while the
+  columns talked about *liking* them — Ben, Sarah and Eddy all flagged the
+  mismatch, so the heading now says what the columns say. Rows say "▶ Watch
+  again" rather than leaving the replay to be discovered.
+- **Layout**: the clip is much bigger (Ben: it took the middle third while the
+  ratings took nearly the full width), and there's a margin under the pinned
+  header (Ben: the instruction sat outside where people were looking).
+- The line "after the video you will be asked how strongly it evokes each of
+  three feelings" is gone (Eddy) — it was already said before and after.
+- "confident in that rating" → "confident in your answer" (Prior).
+- Clips are explicitly unmuted on every play (Prior got silent clips): a webview
+  that has ever blocked sound-on playback can leave the element muted, and
+  playback then "works" with no audio and no error.
+
+### 4. Everywhere
+
+- **One wording for "you left something blank"** (Randy: the video task's was
+  too informal). `ConfirmationModal` now defaults to the questionnaires'
+  wording, so a new page gets it without anyone remembering to.
+- **The help request can be turned off** (Randy). The participant can withdraw
+  their own request ("I'm okay now"), and the dashboard gained a "clear all".
+  Withdrawing resolves the request rather than erasing it, so an RA looking back
+  at a session can still see it happened.
+- **Fullscreen can be restored** with **Ctrl+Shift+F** / **Cmd+Shift+F** (Prior:
+  once the window was windowed there was no way back). Handled at the OS level
+  in Rust, because a window that isn't fullscreen is exactly the case where the
+  page may not have keyboard focus; the in-page handler stays as a fallback.
+- `preview.html` gained the post-conversation questionnaire, the perspective
+  screen and the combined rating page, so any of them can be shown in seconds.
+
+### Raised and deliberately not changed
+
+- **"awe" may be misread** (Eddy). Agreed, but the emotion labels come from the
+  clip library's annotations and changing one changes what the item measures.
+  For Randy to decide.
+- **Rate the partner first** (Eddy). Target order is randomized per participant
+  and recorded; fixing partner-first would trade a randomization the design
+  relies on for an ordering effect. Worth discussing, not worth doing quietly.
+- **The Mac notepad hot corner** (Ben). Not an app bug — that's a macOS
+  hot-corner setting, and the fix is on the machine. Noted in the README.
+
+---
+
 ## 2026-07-23 — Phase C: video affective-response task; dashboard sees live progress
 
 ⚠️ **Measurement change — needs Randy's sign-off before live collection.** The

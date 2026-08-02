@@ -15,7 +15,10 @@ import "./App.css";
 import VideoTaskMain from "./video-task/VideoTaskMain";
 import VideoWatchPage from "./video-task/VideoWatchPage";
 import VideoRatingPage from "./video-task/VideoRatingPage";
+import CombinedRatingPage from "./video-task/CombinedRatingPage";
 import VideoSelectionPage from "./video-task/VideoSelectionPage";
+import PostConversation from "./classification-task/PostConversation";
+import TransitionScreen from "./dyad-task/TransitionScreen";
 import AdminDashboard from "./roundrobin/AdminDashboard";
 import HelpButton from "./components/HelpButton";
 import { VIDEO_SETS, findVideo, resolveVideoSrc } from "./video-task/videos";
@@ -23,9 +26,12 @@ import { emptyData } from "./roundrobin/store";
 import type { RRData } from "./roundrobin/store";
 
 const SCREENS = [
+  "post-conversation questions",
+  "perspective screen",
   "video task (whole thing)",
   "watch page",
   "rating page",
+  "combined rating page",
   "selection page",
   "dashboard",
 ] as const;
@@ -81,6 +87,26 @@ function Preview() {
         <span className="text-gray-400 text-sm ml-auto">{rows.length} rows written</span>
       </div>
 
+      {screen === "post-conversation questions" && (
+        <PostConversation
+          onContinue={(data) => {
+            const responses = (data?.responses ?? {}) as Record<string, number>;
+            for (const key of (data?.order ?? []) as string[]) {
+              void writeRow("post_conversation", key, "", "", "", responses[key] ?? "");
+            }
+          }}
+        />
+      )}
+
+      {screen === "perspective screen" && (
+        <div className="relative h-[80vh]">
+          <TransitionScreen
+            ratingTarget="partner"
+            onContinue={() => window.alert("Continue")}
+          />
+        </div>
+      )}
+
       {screen === "video task (whole thing)" && (
         <VideoTaskMain
           dyadId="PREVIEW"
@@ -93,7 +119,7 @@ function Preview() {
         <VideoWatchPage
           src={srcFor(clip.id)}
           positionLabel="Video 1 of 8"
-          targetReminder="Rating: your partner"
+          targetReminder="YOUR PARTNER"
           alreadyWatchedEarlier={false}
           requireWatch
           onWatched={(stats) => void writeRow("preview", clip.id, "", "watch", "", stats.plays)}
@@ -107,11 +133,27 @@ function Preview() {
           emotions={clip.emotions}
           src={srcFor(clip.id)}
           targetPhrase="your partner"
+          targetCaps="YOUR PARTNER"
           isSelf={false}
           positionLabel="Video 1 of 8"
           onSubmit={(ratings) => {
             for (const r of ratings) {
               void writeRow("preview", clip.id, r.emotion, "intensity", "your partner", r.intensity);
+            }
+          }}
+        />
+      )}
+
+      {screen === "combined rating page" && (
+        <CombinedRatingPage
+          videoId={clip.id}
+          emotions={clip.emotions}
+          people={["yourself", "your partner", "an average UW-Madison student"]}
+          src={srcFor(clip.id)}
+          positionLabel="Video 1 of 8"
+          onSubmit={(ratings) => {
+            for (const r of ratings) {
+              void writeRow("preview", clip.id, r.emotion, "intensity", r.person, r.intensity);
             }
           }}
         />
@@ -124,6 +166,7 @@ function Preview() {
           onSubmit={(result) => {
             void writeRow("preview", "for_partner", "", "", "", result.forPartner.join(";"));
             void writeRow("preview", "for_self", "", "", "", result.forSelf.join(";"));
+            void writeRow("preview", "for_average_student", "", "", "", result.forAverage.join(";"));
           }}
         />
       )}
@@ -137,7 +180,9 @@ function Preview() {
         />
       )}
 
-      {screen !== "dashboard" && <HelpButton onRequestHelp={() => {}} pending={false} />}
+      {screen !== "dashboard" && (
+        <HelpButton onRequestHelp={() => {}} onCancelHelp={() => {}} pending={false} />
+      )}
 
       {rows.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 max-h-48 overflow-auto bg-gray-900 border-t border-gray-600 px-6 py-3 z-30">

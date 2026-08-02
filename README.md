@@ -82,6 +82,20 @@ library instead:
 Leave that box empty and the app uses its built-in eight. Setting it overrides
 them.
 
+### 3.1 Two switches for the video task
+
+Same dashboard, under **"How the video task runs"**. Both ship on the safe
+setting, so you only need this if Randy asks you to change one. **Set them the
+same way on both machines of a dyad.**
+
+| Setting | Ships as | The other option |
+|---|---|---|
+| Rating perspectives | **One at a time** — three passes over the clips, in random order | **All three together** — one pass, every feeling rated for all three people on the same page. Faster, but the three ratings can see each other |
+| Rewatching clips | **Watch once, then optional** — the first viewing is required, after that they can replay but don't have to | **Watch again every time** — roughly triples the viewing time |
+
+Every session records which way these were set, so it's always answerable after
+the fact.
+
 ## 4. Run it
 
 The app opens **fullscreen and locked** (participants can't Alt-Tab or Cmd-Tab
@@ -103,28 +117,41 @@ out of it). The flow you'll see:
    The **Dyad ID** matters more than it looks: it decides which of the five clip
    sets the pair gets. Both machines must have the same Dyad ID typed in, or the
    two partners will rate different videos.
-3. **Dyad task** — it asks for the conversation video file (`.mp4`/`.mov`), then
-   runs the continuous rating blocks automatically.
-4. **Video task** — eight short clips. For each clip: a page where they watch it
+3. **Post-conversation questions** — ten items about the conversation they just
+   had, on 0–10 scales. This is the first thing the participant does, before any
+   video, on purpose: watching the conversation back changes how they remember
+   it.
+4. **Dyad task** — it asks for the conversation video file (`.mp4`/`.mov`), then
+   runs the continuous rating blocks automatically. Before each block a screen
+   says whose feelings they're rating and **holds itself open for six seconds**,
+   and a reminder stays in the top-right corner while they watch. However long
+   the video is, the writing box and the rating always come at the end.
+5. **Video task** — eight short clips. For each clip: a page where they watch it
    (Continue stays greyed out until the clip has played all the way through),
    then a page with six sliders — how strongly it evoked each of three feelings,
-   and how confident they are in each rating. They go through all eight clips
+   and how confident they are in each answer. They go through all eight clips
    three times: once for themselves, once for their partner, once for an average
-   UW student. It ends with a page asking which clips they'd send to their
-   partner and which they'd pick for themselves.
-5. **Questionnaires** — all the questionnaire pages. The question header stays
+   UW student — **the second and third time they don't have to watch the clip
+   again** unless you turn that back on (section 3.1). It ends with a page asking
+   who would like each clip: them, their partner, or the average UW student.
+6. **Questionnaires** — all the questionnaire pages. The question header stays
    pinned while the page scrolls and the Continue button is always bottom-right.
 
 Throughout, a small **"Need help?"** button sits in the bottom-left corner. If a
 participant presses it, it shows up in red on the dashboard. It's deliberately
 hidden during the conversation-rating video, because the mouse position *is* the
-data on that screen.
+data on that screen. Once it's been pressed it can be cleared two ways: you hit
+**clear** on the dashboard, or the participant hits **"I'm okay now"** themselves.
 
-## 5. Getting out of the app
+## 5. Getting out of the app (and back into fullscreen)
 
 **Ctrl+Shift+Q** — or **Cmd+Shift+Q** on the Macs — at any point opens the
 researcher save-and-quit gate. Type the word **`Confirm`** and it flushes any
 buffered data to disk before closing.
+
+**Ctrl+Shift+F** — or **Cmd+Shift+F** — puts the app back into fullscreen if it
+ever ends up in a window. It works even when the app doesn't have keyboard focus.
+Nothing is lost; the session carries on where it was.
 
 Never force-quit mid-session (Task Manager on Windows, Force Quit on Mac) — the
 continuous slider samples are only written to disk every 15 seconds, so you'd
@@ -166,6 +193,13 @@ Screenshot it and text or email me. Two things worth checking first:
   on the dashboard and the app falls back to its built-in clips.
 - **Videos play but the wrong ones / partner sees different clips** → the two
   machines have different Dyad IDs typed on the participant form.
+- **A notepad pops out when the mouse goes to the bottom-right** (the Macs) →
+  that's a macOS **hot corner**, not the app. Turn it off per machine in
+  **System Settings → Desktop & Dock → Hot Corners**, and set the bottom-right
+  corner to "–". Worth doing on every lab Mac: the Continue button lives in that
+  corner.
+- **The app is in a window instead of fullscreen** → **Ctrl+Shift+F** /
+  **Cmd+Shift+F** (section 5).
 
 ## For whoever works on this later (not needed to run it)
 
@@ -187,8 +221,10 @@ re-copies the clips the app needs out of `./mp4_noname` (or pass another folder:
 the build as the fallback used when no stimulus folder is set.
 
 `npm run dev` also serves **http://localhost:1420/preview.html** — a dev-only
-screen picker that jumps straight to any page of the video task, the selection
-page, or the dashboard, and prints the rows that would go to `transitions.csv`.
+screen picker that jumps straight to the post-conversation questions, the
+perspective screen, any page of the video task (separate or combined), the
+selection page, or the dashboard, and prints the rows that would go to
+`transitions.csv`.
 Useful for showing a screen to Randy without sitting through a whole session. It
 is not part of any build.
 
