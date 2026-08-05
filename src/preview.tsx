@@ -18,6 +18,7 @@ import VideoRatingPage from "./video-task/VideoRatingPage";
 import CombinedRatingPage from "./video-task/CombinedRatingPage";
 import VideoSelectionPage from "./video-task/VideoSelectionPage";
 import PostConversation from "./classification-task/PostConversation";
+import RatingOverlay from "./dyad-task/RatingOverlay";
 import TransitionScreen from "./dyad-task/TransitionScreen";
 import AdminDashboard from "./roundrobin/AdminDashboard";
 import HelpButton from "./components/HelpButton";
@@ -27,6 +28,7 @@ import type { RRData } from "./roundrobin/store";
 
 const SCREENS = [
   "post-conversation questions",
+  "post-video writing + rating",
   "perspective screen",
   "video task (whole thing)",
   "watch page",
@@ -45,6 +47,8 @@ function Preview() {
   const [screen, setScreen] = useState<Screen>("video task (whole thing)");
   const [rows, setRows] = useState<string[]>([]);
   const [rrData, setRrData] = useState<RRData>(emptyData());
+  const [ratingText, setRatingText] = useState("");
+  const [ratingScale, setRatingScale] = useState<number | undefined>(undefined);
 
   const writeRow = async (
     ratingTask: string,
@@ -96,6 +100,27 @@ function Preview() {
             }
           }}
         />
+      )}
+
+      {screen === "post-video writing + rating" && (
+        // Boxed into the same fixed-height, overflow-hidden parent the dyad task
+        // gives it, so the preview reproduces the real clipping conditions.
+        <div className="relative h-[calc(100vh-60px)] overflow-hidden">
+          <RatingOverlay
+            currentRatingTarget="self"
+            textInput={ratingText}
+            setTextInput={setRatingText}
+            numberScale={ratingScale}
+            setNumberScale={setRatingScale}
+            attemptedSubmit={false}
+            isFinal
+            onSubmit={() =>
+              void writeRow("preview", "elicitation", "", "", "self", ratingScale ?? "")
+            }
+            onConfirmIncomplete={() => {}}
+            onDismissIncomplete={() => {}}
+          />
+        </div>
       )}
 
       {screen === "perspective screen" && (

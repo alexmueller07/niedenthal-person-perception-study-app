@@ -68,25 +68,6 @@ fn exit_app(app: tauri::AppHandle) {
     app.exit(0);
 }
 
-// Puts the app back into fullscreen kiosk mode.
-//
-// Prior, at the 2026-07-29 review: once the window had been dropped out of
-// fullscreen there was no way back into it, and the app is supposed to run
-// fullscreen for the whole session. Bound to Ctrl+Shift+F (Cmd+Shift+F on the
-// Macs) below, so an RA can restore it without restarting and losing the
-// session.
-#[tauri::command]
-fn enter_fullscreen(app: tauri::AppHandle) -> Result<(), String> {
-    use tauri::Manager;
-    let window = app
-        .get_webview_window("main")
-        .ok_or_else(|| "main window is gone".to_string())?;
-    window.set_fullscreen(true).map_err(|e| e.to_string())?;
-    let _ = window.set_always_on_top(true);
-    let _ = window.set_focus();
-    Ok(())
-}
-
 // ---- Researcher settings ----
 //
 // settings.json always lives in this machine's app-data directory, because one
@@ -248,9 +229,9 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         // Researcher save-and-quit combo registered at the OS level. The old
         // webview keydown listener only fired when the page had keyboard
-        // focus, which a fullscreen kiosk often does not — that is why
-        // Ctrl+Shift+Q felt unreliable. A global shortcut fires regardless of
-        // focus; the frontend keydown handler remains as a fallback.
+        // focus, which the app does not always have — that is why Ctrl+Shift+Q
+        // felt unreliable. A global shortcut fires regardless of focus; the
+        // frontend keydown handler remains as a fallback.
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, event| {
@@ -262,14 +243,6 @@ pub fn run() {
                     {
                         use tauri::Emitter;
                         let _ = app.emit("admin-quit", ());
-                    } else if shortcut
-                        .matches(Modifiers::CONTROL | Modifiers::SHIFT, Code::KeyF)
-                        || shortcut.matches(Modifiers::SUPER | Modifiers::SHIFT, Code::KeyF)
-                    {
-                        // Handled here rather than in the webview: the window
-                        // being out of fullscreen is exactly the situation where
-                        // the page may not have keyboard focus.
-                        let _ = enter_fullscreen(app.clone());
                     }
                 })
                 .build(),
@@ -283,17 +256,15 @@ pub fn run() {
             // non-fatal — the in-page keydown listener still works.
             {
                 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
-                // `mut` is only used on macOS, which adds the Cmd variants.
+                // `mut` is only used on macOS, which adds the Cmd variant.
                 #[allow(unused_mut)]
-                let mut wanted = vec![
-                    ("ctrl+shift+q", Modifiers::CONTROL | Modifiers::SHIFT, Code::KeyQ),
-                    ("ctrl+shift+f", Modifiers::CONTROL | Modifiers::SHIFT, Code::KeyF),
-                ];
+                let mut wanted = vec![(
+                    "ctrl+shift+q",
+                    Modifiers::CONTROL | Modifiers::SHIFT,
+                    Code::KeyQ,
+                )];
                 #[cfg(target_os = "macos")]
-                wanted.extend([
-                    ("cmd+shift+q", Modifiers::SUPER | Modifiers::SHIFT, Code::KeyQ),
-                    ("cmd+shift+f", Modifiers::SUPER | Modifiers::SHIFT, Code::KeyF),
-                ]);
+                wanted.push(("cmd+shift+q", Modifiers::SUPER | Modifiers::SHIFT, Code::KeyQ));
                 for (name, modifiers, code) in wanted {
                     let shortcut = Shortcut::new(Some(modifiers), code);
                     if let Err(e) = app.global_shortcut().register(shortcut) {
@@ -302,16 +273,25 @@ pub fn run() {
                 }
             }
 
+            // The window is an ordinary window: movable, resizable, minimizable,
+            // and free to be left behind on another virtual desktop. Randy and
+            // Alex, 2026-08-04 — the kiosk lock (fullscreen + always-on-top +
+            // no decorations + skipTaskbar) was removed because it followed the
+            // operator across desktops and there was no way out of it.
+            //
+            // The one thing kept from the lock is the data guarantee: closing
+            // the window would drop up to ~15 s of buffered slider samples, so
+            // the close button opens the same save-and-quit confirmation that
+            // Ctrl+Shift+Q does instead of exiting on the spot. Confirming it
+            // flushes to disk and calls `exit_app` (app.exit), which bypasses
+            // this guard.
             let window = app.get_webview_window("main").unwrap();
-            window.set_fullscreen(true).unwrap();
-            let _ = window.set_always_on_top(true);
-
-            // Block all OS-level window close attempts (Alt+F4, window close
-            // button). The only sanctioned exit is the researcher save-and-quit
-            // flow, which calls `exit_app` (app.exit) and bypasses this guard.
-            window.on_window_event(|event| {
+            let handle = app.handle().clone();
+            window.on_window_event(move |event| {
                 if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                    use tauri::Emitter;
                     api.prevent_close();
+                    let _ = handle.emit("admin-quit", ());
                 }
             });
             Ok(())
@@ -321,7 +301,6 @@ pub fn run() {
             write_csv_transitions,
             setup_rating_directory,
             exit_app,
-            enter_fullscreen,
             load_roundrobin,
             save_roundrobin,
             load_settings,

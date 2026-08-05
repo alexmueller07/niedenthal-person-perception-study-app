@@ -6,6 +6,93 @@ to collect real participant data.
 
 ---
 
+## 2026-08-04 — Phase E: scale alignment, the unreachable rating page, un-kiosking
+
+Three items from Alex's walkthrough, plus the full wording export Randy asked
+for. No measurement changes — nothing on this list alters what is collected or
+how it is scored.
+
+### 1. Scale questions are centred over their circles
+
+On the post-conversation page the question text was left-aligned against the full
+width of the page frame while the row of circles was centred in a narrower
+column, so on a wide screen the two read as unrelated. The question now sits
+inside the same column as the circles.
+
+- **Changed:** `src/components/NumberScale.tsx`.
+- Affects all ten items on `PostConversation`, including the −5 … +5
+  relative-talking item. Wording and values untouched.
+
+### 2. The post-video writing screen could not be got off
+
+⚠️ **This was blocking a session, not a cosmetic problem.** The writing +
+elicitation screen (`RatingOverlay`) was a dead-centred flex column inside a
+fixed-height, `overflow-hidden` parent. Once its content grew taller than the
+window — which it does on any laptop-height screen — it was clipped at **both**
+ends and could not be scrolled. The "Press Tab to continue" prompt sits at the
+bottom, so it was the first thing to disappear: a participant on a short screen
+saw a cut-off page with no visible way forward.
+
+- **Changed:** `src/dyad-task/RatingOverlay.tsx`,
+  `src/dyad-task/DyadTaskMain.tsx` (passes the submit handler down),
+  `src/preview.tsx` (the screen is now in the dev preview).
+- The overlay scrolls; content starts from the top when the window is short and
+  only centres when there is room to spare.
+- **Continue is now a real button**, pinned bottom-right like every other page
+  in the app. Tab still submits — same handler, same behaviour — it is just no
+  longer the only way through.
+- Vertical padding trimmed (the 8 rem gap above the Likert, the 8 rem gap above
+  the key prompt) so the page fits a 660 px viewport without scrolling at all.
+- Verified at 1366×660 and 1280×560: top visible at rest, whole page reachable,
+  Continue on screen and submitting.
+
+### 3. The kiosk lock is gone (Randy + Alex, 2026-08-04)
+
+The app is an ordinary window now. It can be minimized, resized, moved, and left
+behind on another virtual desktop. Previously it was fullscreen, always-on-top,
+undecorated and hidden from the taskbar, which meant it travelled with you across
+desktops with no way out.
+
+- **Changed:** `src-tauri/tauri.conf.json` — dropped `fullscreen`, `alwaysOnTop`,
+  `skipTaskbar`; `decorations`, `resizable`, `maximizable`, `minimizable` and
+  `closable` all true; opens `maximized` at 1440×900.
+- **Changed:** `src-tauri/src/lib.rs` — the `setup` hook no longer forces
+  fullscreen or always-on-top. The `enter_fullscreen` command and its
+  Ctrl+Shift+F / Cmd+Shift+F global shortcut are removed: their only purpose was
+  recovering the lock, and `enter_fullscreen` re-applied always-on-top, which
+  would have reintroduced exactly the behaviour being removed.
+- **Changed:** `src/App.tsx` — the in-page Ctrl+Shift+F fallback is removed.
+- **Kept:** **Ctrl+Shift+Q / Cmd+Shift+Q** is unchanged. It is still the
+  sanctioned way to end a session early, and still flushes buffered data before
+  exiting.
+- **Kept, with a change of route:** the window close button no longer silently
+  refuses. `CloseRequested` now emits the same `admin-quit` event the shortcut
+  does, so the X opens the Save & Quit gate. Closing the window would otherwise
+  drop up to ~15 s of buffered slider samples; this keeps that guarantee while
+  leaving the window genuinely closable.
+- **Changed:** `src/utils/lockdown.ts` — F11 is no longer suppressed, since
+  fullscreen is the operator's choice now. Reload (F5, Ctrl+R), dev tools and
+  history navigation stay blocked: those destroy the in-memory state of a
+  running session, which has nothing to do with kiosk mode.
+- Verified on the running app: `WS_THICKFRAME`, `WS_MINIMIZEBOX`,
+  `WS_MAXIMIZEBOX`, `WS_CAPTION` and `WS_SYSMENU` all set; `WS_EX_TOPMOST` and
+  `WS_EX_TOOLWINDOW` both clear. Minimize, restore and resize all work, and
+  WM_CLOSE leaves the process running with the Save & Quit gate open.
+
+**Note for the lab machines:** nothing here was ever real kiosk protection — a
+webview cannot suppress Alt+Tab or the Windows key. If participants must be kept
+inside the app, that is Windows Assigned Access or Group Policy, as it always
+was.
+
+### 4. Full wording export (Randy)
+
+- **New:** `docs/WORDING.md` — every string a participant sees, in order, from
+  the check-in screen to "Please alert your researcher that you are finished",
+  for the lab to review the wording. Ends with ten flagged wording questions
+  (a typo, a stale cross-reference, a duplicated item, the sex field, and so on).
+
+---
+
 ## 2026-08-02 — Phase D: review feedback from the 2026-07-29 lab meeting
 
 Everything the group raised in the 2026-07-29 review thread (Randy, Ben, Reese,

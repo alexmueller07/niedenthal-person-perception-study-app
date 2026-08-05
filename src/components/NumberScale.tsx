@@ -38,10 +38,14 @@ export default function NumberScale({
 
   return (
     <div className="border-b border-gray-600 py-6 last:border-b-0">
-      <p className="text-white text-xl mb-5">{label}</p>
-
+      {/* The question sits inside the same column as the circles, centred over
+          them. Randy, 2026-08-04: the question used to be left-aligned against
+          the full width of the page frame while the scale was centred, so on a
+          wide screen the two read as belonging to different questions. */}
       <div className="flex justify-center">
         <div className="w-full max-w-3xl">
+          <p className="text-white text-xl mb-5 text-center">{label}</p>
+
           <div className="flex items-start justify-between gap-1">
             {points.map((point) => (
               <button
