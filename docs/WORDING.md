@@ -1,27 +1,3 @@
-# PPS App — Complete On-Screen Wording
-
-Every word a participant sees, in the order they see it, from check-in to the
-final screen. Prepared for Randy's wording review with the lab.
-
-- **App version:** 2.0.0
-- **Generated from the code on:** 2026-08-04
-- **Branch:** `fix/scale-centering-rating-page-unlock-window`
-
-**How to read this.** Each screen has a heading, a one-line note on when it
-appears, and then the exact text. Text in `[brackets]` is a button. Text in
-_italics_ is a note from me, not something on screen. `{curly braces}` mark a
-value the app fills in at run time.
-
-**Things that change between participants.** Where a screen swaps YOU / YOUR
-PARTNER, both versions are written out. Where item order is randomized, the
-items are listed in the order they appear in the code, not the order any one
-participant sees them — the randomization is recorded in the data file.
-
-**Open wording questions are collected at the end**, in *Flags for the review*.
-That section is where I would start if the meeting is short.
-
----
-
 ## Contents
 
 - [Part 1 — Check-in](#part-1--check-in)
@@ -33,15 +9,12 @@ That section is where I would start if the meeting is short.
 - [Part 7 — End of session](#part-7--end-of-session)
 - [Appendix A — Text that can appear on any screen](#appendix-a--text-that-can-appear-on-any-screen)
 - [Appendix B — Researcher-only screens](#appendix-b--researcher-only-screens)
-- [Flags for the review](#flags-for-the-review)
 
 ---
 
 # Part 1 — Check-in
 
 ## 1.1 Study Check-In
-
-*First screen when the app opens.*
 
 > **Study Check-In**
 >
@@ -759,77 +732,3 @@ Participants are not told this exists.*
 Signing in with the admin address opens a tracking dashboard instead of the
 study. Participants never see it, so its wording is out of scope for this
 review — flag it if the lab wants it covered too.
-
----
-
-# Flags for the review
-
-Things I would put in front of the group. None of these are bugs in the code;
-they are wording decisions that need a person to make them.
-
-### 1. Typo on the setup screen
-
-"Please Enter the **Particpant's** Information" is missing an *i*. RA-facing, but
-on screen in front of the participant. One-word fix whenever you want it.
-
-### 2. "Previously seen states" no longer refers to anything
-
-The emotion-frequency header (6.1) says *"each of the previously seen states"*.
-That sentence dates from the retired scenario task, which used those fifteen
-words. The task that now runs before it is the video task, whose emotions are
-awe, fear, anxiety, disgust, sadness, joy, amusement, surprise and sympathy —
-only **disgust** overlaps with the fifteen states on this page. As written, the
-sentence points at something the participant has not seen. Needs rewording.
-
-### 3. "How comfortable did you feel during the conversation?" is asked twice
-
-Once in the post-conversation questions (3.1, item 8, on a 0–10 scale) and again
-in the conversation-experience page (6.2, question 2, on a 7-point
-uncomfortable–comfortable scale). Both are recorded. If that is deliberate — a
-before/after check — it is worth knowing; if not, one should go.
-
-### 4. Sex options are Male / Female only
-
-Demographics (6.9) offers two buttons and no way to decline. Worth a decision
-from the group, and possibly a look from the IRB, on whether to add an
-additional option, a "prefer not to say", or to ask gender separately.
-
-### 5. Loneliness scale ends on "Always"
-
-The columns run Never · Rarely · Sometimes · **Always** (6.4). The published UCLA
-scale these items come from uses *Often* as its fourth point. If the intent was
-to match the published scale, this is a substantive change to it; if the change
-was deliberate, it should be recorded somewhere.
-
-### 6. "Very" as the right-hand anchor
-
-The elicitation rating (4.5) runs **Not at all** → **Very**. Everywhere else in
-the app the pair is "Not at all" → "Very much". Left as-is because changing it
-would break comparability with the pilot data — flagging it rather than fixing
-it.
-
-### 7. Stray indent inside instruction 2
-
-Instruction screen 2 of the tracking task (4.2) contains a formatting mark in the
-middle of the second bullet, so it renders as *"during the &nbsp;&nbsp;
-conversation"* with an unexpected gap. Cosmetic, but visible. I have left the
-wording alone and can fix the spacing on request.
-
-### 8. UW–Madison is written two ways
-
-Most screens use an en dash ("UW–Madison"); the rating prompt in 5.3 uses a
-hyphen ("AN AVERAGE UW-MADISON STUDENT") because it is generated from a
-different string. Purely cosmetic.
-
-### 9. Two near-identical free-text prompts
-
-6.2 question 3 asks about "your experience during your conversation"; 6.10 asks
-about "your experience with our study". They read very similarly and sit in the
-same session. Worth confirming participants can tell them apart.
-
-### 10. Nothing marks the end of the tracking task
-
-After the fourth block the app moves straight into the video task instructions.
-There is no "that part is finished" screen, whereas the video task has one
-between each person (5.4). Adding one is easy if the group wants the sections to
-feel separated.
