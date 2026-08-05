@@ -174,17 +174,6 @@ function App() {
         setShowAdminQuit(true);
         return;
       }
-      // Restore fullscreen: Ctrl+Shift+F. The primary path is the OS-level
-      // shortcut registered in Rust; this is the in-page fallback, and the only
-      // one that exists in browser dev.
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "F" || e.key === "f")) {
-        e.preventDefault();
-        e.stopPropagation();
-        void invoke("enter_fullscreen").catch((err) =>
-          console.error("enter_fullscreen failed:", err)
-        );
-        return;
-      }
       if (isBlockedShortcut(e)) {
         e.preventDefault();
       }
@@ -197,6 +186,9 @@ function App() {
     // Rust. It fires even when the webview does not have keyboard focus (the
     // reason the keydown-only version was unreliable). The keydown listener
     // above stays as a fallback and for browser dev.
+    //
+    // Rust emits the same "admin-quit" event when the window's close button is
+    // used, so the X opens this modal rather than exiting without flushing.
     let unlistenQuit: (() => void) | null = null;
     if ("__TAURI_INTERNALS__" in window) {
       void listen("admin-quit", () => setShowAdminQuit(true)).then((un) => {

@@ -1,25 +1,27 @@
-// In-app keyboard lockdown.
+// In-app keyboard guard.
 //
-// Returns true when a keydown event is a browser/OS shortcut that a participant
-// could use to escape, reload, navigate, or open dev tools, and that the webview
-// is able to intercept. The App-level capture listener calls preventDefault on
-// these.
+// Returns true when a keydown event is a browser shortcut that would damage a
+// running session — reload, dev tools, history navigation, zoom — and that the
+// webview is able to intercept. The App-level capture listener calls
+// preventDefault on these.
 //
-// IMPORTANT — limits of an in-app approach: a webview application CANNOT reliably
-// suppress true OS-shell gestures (Alt+Tab, the Windows key, Win+Tab / 3-finger
-// Task View, Win+D / Show Desktop, Ctrl+Alt+Del). Those are handled by the
-// Windows shell before the app ever sees them. Full kiosk lockdown on the lab
-// machines must be done with Windows Assigned Access (kiosk mode) or Group Policy.
-// See docs/CHANGELOG.md.
+// SCOPE — this is a data-safety guard, not a kiosk lock. Since 2026-08-04 the
+// window is an ordinary window (minimize, resize, switch desktops); see
+// src-tauri/src/lib.rs. Nothing here tries to keep the participant inside the
+// app, and it never could: a webview cannot suppress OS-shell gestures
+// (Alt+Tab, the Windows key, Win+Tab, Win+D, Ctrl+Alt+Del) because the shell
+// handles them first. What it does prevent is a stray Ctrl+R or F5 wiping the
+// in-memory state of a session that is halfway through.
 //
 // Note: plain Tab and Space are deliberately NOT blocked — the study uses Tab to
 // submit ratings and Space to advance, and text fields need normal typing.
+// F11 is no longer blocked either: fullscreen is now the operator's choice.
 export function isBlockedShortcut(e: KeyboardEvent): boolean {
   const key = e.key;
   const lower = key.length === 1 ? key.toLowerCase() : key;
 
-  // Function keys: reload (F5), fullscreen toggle (F11), dev tools (F12).
-  if (key === "F5" || key === "F11" || key === "F12") return true;
+  // Function keys: reload (F5), dev tools (F12).
+  if (key === "F5" || key === "F12") return true;
 
   // Reload: Ctrl+R / Ctrl+Shift+R.
   if (e.ctrlKey && lower === "r") return true;
