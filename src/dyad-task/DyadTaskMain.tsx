@@ -484,6 +484,7 @@ function DyadTaskMain({
                 setNumberScale={setNumberScale}
                 attemptedSubmit={attemptedSubmit}
                 isFinal={awaitingFinalRating}
+                onSubmit={() => void handleTabSubmit()}
                 onConfirmIncomplete={handleConfirmIncomplete}
                 onDismissIncomplete={handleDismissIncomplete}
               />
