@@ -98,8 +98,10 @@ the fact.
 
 ## 4. Run it
 
-The app opens **fullscreen and locked** (participants can't Alt-Tab or Cmd-Tab
-out of it). The flow you'll see:
+The app opens **maximized in an ordinary window**. You can minimize it, resize
+it, move it, and switch to another desktop and leave it behind — it behaves like
+any other program. (It used to be a locked fullscreen kiosk that followed you
+around; Randy and Alex dropped that on 2026-08-04.) The flow you'll see:
 
 1. **Check-in screen** — the participant types their **email** (no password).
    - A new email gets placed into a random **group of 5**; a returning email
@@ -143,19 +145,23 @@ hidden during the conversation-rating video, because the mouse position *is* the
 data on that screen. Once it's been pressed it can be cleared two ways: you hit
 **clear** on the dashboard, or the participant hits **"I'm okay now"** themselves.
 
-## 5. Getting out of the app (and back into fullscreen)
+## 5. Getting out of the app
 
 **Ctrl+Shift+Q** — or **Cmd+Shift+Q** on the Macs — at any point opens the
 researcher save-and-quit gate. Type the word **`Confirm`** and it flushes any
-buffered data to disk before closing.
+buffered data to disk before closing. This is the way to end a session early
+without losing anything.
 
-**Ctrl+Shift+F** — or **Cmd+Shift+F** — puts the app back into fullscreen if it
-ever ends up in a window. It works even when the app doesn't have keyboard focus.
-Nothing is lost; the session carries on where it was.
+The window's **close button (X)** opens that same gate rather than quitting on
+the spot, so a mis-click can't end a session. `Cancel` puts you back exactly
+where you were.
+
+Minimizing, resizing, or switching desktops is fine at any point — the session
+keeps running and nothing is lost.
 
 Never force-quit mid-session (Task Manager on Windows, Force Quit on Mac) — the
 continuous slider samples are only written to disk every 15 seconds, so you'd
-lose up to ~15 seconds of data.
+lose up to ~15 seconds of data. Use Ctrl+Shift+Q instead; that's what it's for.
 
 ## 6. The shared tracking folder (optional, but worth it)
 
@@ -198,8 +204,10 @@ Screenshot it and text or email me. Two things worth checking first:
   **System Settings → Desktop & Dock → Hot Corners**, and set the bottom-right
   corner to "–". Worth doing on every lab Mac: the Continue button lives in that
   corner.
-- **The app is in a window instead of fullscreen** → **Ctrl+Shift+F** /
-  **Cmd+Shift+F** (section 5).
+- **The app is in a window instead of fullscreen** → that's expected since
+  2026-08-04. Use the maximize button if you want it filling the screen.
+- **The app vanished** → it's minimized or on another desktop. Find it in the
+  taskbar / Dock, or Alt-Tab to it. The session is still running.
 
 ## For whoever works on this later (not needed to run it)
 
