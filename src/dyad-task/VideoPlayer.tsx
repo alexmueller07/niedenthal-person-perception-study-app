@@ -21,10 +21,12 @@ const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(
           </div>
         )}
         {videoSrc && (
+          // No autoPlay: DyadTaskMain starts playback once every overlay is
+          // cleared. Autoplay ran the video (audio included) underneath the
+          // 6-second perspective announcement, unwatched and unrated.
           <video
             ref={ref}
             src={videoSrc}
-            autoPlay
             className="w-4/6 max-h-full object-contain"
           />
         )}

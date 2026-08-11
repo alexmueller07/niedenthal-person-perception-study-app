@@ -14,6 +14,17 @@ const SOFTWARE_VERSION = "2.0.0";
 
 const DYAD_BLOCKS = 4;
 
+// The instruction screens, revealed one keypress at a time. groupSize below is
+// this array's length so all five build up on a single page instead of
+// splitting 4 + 1, and the keydown handler advances off the same count.
+const DYAD_INSTRUCTIONS = [
+  "In this part of the study, you will watch the video recording of the conversation you just had.",
+  "We are interested in two things:\n\t1. How YOU were feeling during the conversation.\n\t2. How YOUR PARTNER was feeling during the conversation.",
+  "The video is split into parts. Before each part, the screen will tell you whether to focus on YOUR OWN feelings or YOUR PARTNER'S feelings, and a reminder stays in the corner of the screen while you watch.",
+  "As the video plays, continuously move the slider to indicate how positive or negative YOU or YOUR PARTNER felt at that moment during the conversation.",
+  "At certain points, you will be asked to write a short response and make ratings about how you or your partner felt during the part of the conversation you just watched.",
+];
+
 interface DyadTaskMainProps {
   formData: FormData;
   csvFilePath: string;
@@ -74,8 +85,14 @@ function DyadTaskMain({
   const sampleBufferRef = useRef<string[]>([]);
   const videoStartedRef = useRef<boolean>(false);
   const textPromptCountRef = useRef<number>(0);
-  const timeoutRef = useRef<number | null>(null);
   const trialNumber = useRef<number>(1);
+  // One diagnostic per mount for samples skipped while the video clock reads 0
+  // — expected for a beat after each overlay while play() spins up, but a
+  // video that never starts should leave a trace in the console.
+  const zeroVtLoggedRef = useRef<boolean>(false);
+  // A rejected video.play() (autoplay policy, decoder failure) shown to the
+  // participant — same fail-loudly reasoning as StimulusPlayer's loadError.
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
   // Fire-once guard: prevents onComplete from being called multiple times.
   const completedRef = useRef<boolean>(false);
   // End-of-video is reported by three independent detectors (the `ended` event,
@@ -113,10 +130,19 @@ function DyadTaskMain({
   const flushSamples = useCallback(() => {
     const buffer = sampleBufferRef.current;
     if (buffer.length === 0) return;
+    // Drain, but keep a handle on what was drained: if the write rejects, the
+    // rows go back to the FRONT of the buffer (order preserved) for the next
+    // flush, instead of being gone. The Rust side appends line-by-line, so a
+    // partial write followed by a retry can duplicate the rows that did land —
+    // duplicates are recoverable in analysis, silently lost samples are not.
+    const drained = buffer.splice(0, buffer.length);
     invoke("write_csv_ratings", {
       path: csvFilePath,
-      contents: buffer.splice(0, buffer.length),
-    }).catch(handleCsvError);
+      contents: drained,
+    }).catch((err) => {
+      sampleBufferRef.current.unshift(...drained);
+      handleCsvError(err);
+    });
   }, [csvFilePath, handleCsvError]);
 
   /** Stops the video and the sampler, and writes whatever is still buffered. */
@@ -124,10 +150,6 @@ function DyadTaskMain({
     videoFinishedRef.current = true;
     videoRef.current?.pause();
     setVideoEnded(true);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
     flushSamples();
   }, [flushSamples]);
 
@@ -165,6 +187,14 @@ function DyadTaskMain({
     }
   };
 
+  // The object URL keeps the whole conversation recording mapped for the life
+  // of the URL, not the life of the element — release it when the source
+  // changes or the task unmounts.
+  useEffect(() => {
+    if (!videoSrc) return;
+    return () => URL.revokeObjectURL(videoSrc);
+  }, [videoSrc]);
+
   const buildRow = (
     sliderVal: number,
     emoRating: number | string,
@@ -187,7 +217,7 @@ function DyadTaskMain({
       sliderVal.toFixed(2),
       emoRating,
       currentRatingTarget,
-      elapsedSec.toFixed(2),   // FIX: was / 15000, now / 1000 — correct elapsed seconds
+      elapsedSec.toFixed(2),
       nextStopTimeSecRef.current.toFixed(0),
       movieTime.toFixed(2),
       isShift,
@@ -199,32 +229,58 @@ function DyadTaskMain({
       .join(",");
 
   // Main sampling + overlay-watch loop.
+  //
+  // The sampler is a drift-correcting setTimeout chain, not a setInterval:
+  // every tick is scheduled against the loop's own start on the
+  // performance.now() clock (deadline = start + n × 100 ms), so a tick that
+  // fires late (GC pause, decoder stall) does not push every later sample
+  // late with it. The 100 ms cadence is the measurement, not UI.
   useEffect(() => {
     let sampleTimerIdLocal: number | null = null;
+    let sampleLoopCancelled = false;
     if (videoSrc && instructionsDone && !showTransitionScreen) {
       if (taskStartMsRef.current === null) {
         taskStartMsRef.current = Date.now();
-
-        timeoutRef.current = window.setTimeout(() => {
-          handleVideoFinished();
-        }, 10000000);
       }
 
-      sampleTimerIdLocal = window.setInterval(() => {
+      const SAMPLE_INTERVAL_MS = 100;
+      const loopStartMs = performance.now();
+      let tickCount = 0;
+
+      const takeSample = () => {
+        if (sampleLoopCancelled) return;
         if (!showToggleScreen && !videoEnded && !showTransitionScreen) {
           const vt = videoRef.current?.currentTime ?? 0;
-          if (vt <= 0) return;
-          if (!videoStartedRef.current) {
-            videoStartedRef.current = true;
-            nextStopTimeSecRef.current = Math.ceil(vt / 150) * 150 || 150;
+          if (vt <= 0) {
+            // Expected for a beat while play() spins up after an overlay, but
+            // logged once so a video that never starts leaves a trace.
+            if (!zeroVtLoggedRef.current) {
+              zeroVtLoggedRef.current = true;
+              console.error(
+                "Dyad sampler: skipping samples while video currentTime is 0 (video not yet playing)."
+              );
+            }
+          } else {
+            if (!videoStartedRef.current) {
+              videoStartedRef.current = true;
+              nextStopTimeSecRef.current = Math.ceil(vt / 150) * 150 || 150;
+            }
+            const elapsed = taskStartMsRef.current
+              ? (Date.now() - taskStartMsRef.current) / 1000
+              : 0;
+            const row = buildRow(latestSliderRef.current, "NA", elapsed, vt, 0, "");
+            sampleBufferRef.current.push(row);
           }
-          const elapsed = taskStartMsRef.current
-            ? (Date.now() - taskStartMsRef.current) / 1000  // FIX: was / 15000
-            : 0;
-          const row = buildRow(latestSliderRef.current, "NA", elapsed, vt, 0, "");
-          sampleBufferRef.current.push(row);
         }
-      }, 100);
+        tickCount += 1;
+        const nextDeadline = loopStartMs + tickCount * SAMPLE_INTERVAL_MS;
+        sampleTimerIdLocal = window.setTimeout(
+          takeSample,
+          Math.max(0, nextDeadline - performance.now())
+        );
+      };
+
+      sampleTimerIdLocal = window.setTimeout(takeSample, SAMPLE_INTERVAL_MS);
 
       overlayWatchRef.current = window.setInterval(() => {
         if (
@@ -245,10 +301,10 @@ function DyadTaskMain({
     }
 
     return () => {
-      if (sampleTimerIdLocal) clearInterval(sampleTimerIdLocal);
+      sampleLoopCancelled = true;
+      if (sampleTimerIdLocal !== null) clearTimeout(sampleTimerIdLocal);
       if (overlayWatchRef.current) clearInterval(overlayWatchRef.current);
       if (sliderFlushRef.current) clearInterval(sliderFlushRef.current);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [videoSrc, instructionsDone, showToggleScreen, showTransitionScreen]);
 
@@ -289,7 +345,14 @@ function DyadTaskMain({
       const buffer = sampleBufferRef.current;
       if (buffer.length > 0) {
         const toFlush = buffer.splice(0, buffer.length);
-        await invoke("write_csv_ratings", { path: csvFilePath, contents: toFlush });
+        try {
+          await invoke("write_csv_ratings", { path: csvFilePath, contents: toFlush });
+        } catch (err) {
+          // Same recovery as flushSamples: a failed write must not cost the
+          // rows. Put them back at the front and let the caller see the error.
+          sampleBufferRef.current.unshift(...toFlush);
+          throw err;
+        }
       }
     });
     return unregister;
@@ -297,20 +360,35 @@ function DyadTaskMain({
 
   // Play/pause based on overlay state. Never restarts a video that has already
   // run out — closing the final writing screen must not replay the last frame.
+  //
+  // Playback starts HERE, not from an autoPlay attribute on the element:
+  // autoplay started the video (audio included) underneath the 6-second
+  // perspective announcement while the sampler was gated off, so the opening
+  // of each first segment played unwatched and unrated behind an opaque
+  // overlay. Starting from this effect means nothing plays until every overlay
+  // is cleared and the participant can see and rate it. The explicit .catch
+  // follows StimulusPlayer: a rejected play() (autoplay policy, decoder
+  // failure) must fail loudly, not look like a frozen app.
   useEffect(() => {
-    if (videoRef.current) {
-      if (showToggleScreen || showTransitionScreen || videoEnded) {
-        videoRef.current.pause();
-      } else if (instructionsDone) {
-        videoRef.current.play();
-      }
+    const video = videoRef.current;
+    if (!video) return;
+    if (showToggleScreen || showTransitionScreen || videoEnded) {
+      video.pause();
+    } else if (instructionsDone) {
+      video.play().then(
+        () => setPlaybackError(null),
+        (err) => {
+          console.error("Dyad video playback failed:", err);
+          setPlaybackError("The video could not be started. Please alert your researcher.");
+        }
+      );
     }
   }, [showToggleScreen, showTransitionScreen, instructionsDone, videoEnded]);
 
-  const submitAndAdvance = async (ratingValue: number, note: string) => {
+  const submitAndAdvance = async (ratingValue: number | string, note: string) => {
     try {
       const elapsed = taskStartMsRef.current
-        ? (Date.now() - taskStartMsRef.current) / 1000  // FIX: was / 15000
+        ? (Date.now() - taskStartMsRef.current) / 1000
         : 0;
       const movieTime = videoRef.current?.currentTime ?? 0;
 
@@ -361,13 +439,17 @@ function DyadTaskMain({
 
   const handleConfirmIncomplete = async () => {
     if (!showToggleScreen) return;
-    await submitAndAdvance(numberScale ?? 0, textInput.trim());
+    // A skipped elicitation rating is written as "" — the same convention the
+    // video task uses for skipped sliders (see VideoRatingPage). The old 0
+    // was indistinguishable from a low answer on the 1-9 scale.
+    await submitAndAdvance(numberScale ?? "", textInput.trim());
   };
 
   const handleDismissIncomplete = () => setAttemptedSubmit(false);
 
-  // Stable identity: Slider's 100 ms sampling loop must not be torn down and
-  // restarted because this component re-rendered.
+  // Stable identity: Slider calls this from its mousemove listener (one ref
+  // write per event), and that listener must not be torn down and re-attached
+  // because this component re-rendered.
   const handleSliderSample = useCallback((value: number) => {
     latestSliderRef.current = value;
   }, []);
@@ -385,8 +467,11 @@ function DyadTaskMain({
         event.preventDefault();
         handleTabSubmit();
       } else if (videoSrc && !instructionsDone) {
+        // Auto-repeat from a held key and lone modifiers are not deliberate
+        // keypresses — either could blow through several instruction screens.
+        if (event.repeat || ["Shift", "Control", "Alt", "Meta"].includes(event.key)) return;
         event.preventDefault();
-        if (instructionIndex + 1 >= 5) {
+        if (instructionIndex + 1 >= DYAD_INSTRUCTIONS.length) {
           setInstructionsDone(true);
           setShowTransitionScreen(true);
         } else {
@@ -429,17 +514,16 @@ function DyadTaskMain({
         <Instructions
           instructionIndex={instructionIndex}
           onBack={() => setInstructionIndex((i) => Math.max(0, i - 1))}
-          groupSize={4}
-          instructions={[
-            "In this part of the study, you will watch the video recording of the conversation you just had.",
-            "We are interested in two things:\n\t1. How YOU were feeling during the conversation.\n\t2. How YOUR PARTNER was feeling during the \tconversation.",
-            "The video is split into parts. Before each part, the screen will tell you whether to focus on YOUR OWN feelings or YOUR PARTNER'S feelings, and a reminder stays in the corner of the screen while you watch.",
-            "As the video plays, continuously move the slider to indicate how positive or negative YOU or YOUR PARTNER felt at that moment during the conversation.",
-            "At certain points, you will be asked to write a short response and make ratings about how you or your partner felt during the part of the conversation you just watched.",
-          ]}
+          groupSize={DYAD_INSTRUCTIONS.length}
+          instructions={DYAD_INSTRUCTIONS}
         />
       ) : (
         <div className="h-full w-full flex flex-col relative">
+          {playbackError && (
+            <div className="absolute top-0 left-0 right-0 z-30 bg-red-700 border-b-2 border-red-400 px-6 py-3 text-center">
+              <p className="text-white font-bold text-lg">{playbackError}</p>
+            </div>
+          )}
           {/* Perspective reminder, on screen for the whole block. Randy,
               2026-07-30: participants were losing track of whose feelings they
               were rating, and by the middle of the task were no longer

@@ -43,6 +43,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Fail fast: a broken unit test should stop the build before the (much
+      # slower) Rust compile spends runner minutes on it.
+      - name: Run tests
+        run: npm test
+
       - name: Build Windows installer
         run: npm run tauri build
 

@@ -13,7 +13,7 @@ import HelpButton from "./components/HelpButton";
 import SignIn from "./roundrobin/SignIn";
 import Welcome from "./roundrobin/Welcome";
 import AdminDashboard from "./roundrobin/AdminDashboard";
-import { loadData, saveData, signIn as rrSignIn } from "./roundrobin/store";
+import { emptyData, loadData, mergeData, saveData, signIn as rrSignIn } from "./roundrobin/store";
 import type { RRData, RRParticipant } from "./roundrobin/store";
 import { isHelpOpen, loadProgress, mergeProgress, saveProgress } from "./roundrobin/progress";
 import type { RRProgress, StageKey } from "./roundrobin/progress";
@@ -144,10 +144,22 @@ function App() {
     return () => window.clearInterval(id);
   }, [helpPending, rrParticipant]);
 
-  const handleParticipantSignIn = (email: string) => {
-    const base = rrData ?? { version: 1 as const, groupSize: 5, participants: [], meetings: {} };
+  const handleParticipantSignIn = async (email: string) => {
+    // Both check-in machines share the store file. The snapshot loaded at app
+    // start goes stale the moment the other machine saves a sign-in, and
+    // writing it back would erase that sign-in — so re-load from disk and
+    // merge by email right before saving. A race window remains: two sign-ins
+    // landing between each other's load and save can still drop one, but it
+    // is now milliseconds wide instead of session-long. Alex, 2026-08-10.
+    const onDisk = await loadData();
+    const base = mergeData(onDisk, rrData ?? emptyData());
     const result = rrSignIn(base, email);
-    if (result.isNew) persistRr(result.data);
+    if (result.isNew) {
+      persistRr(result.data);
+    } else {
+      // Nothing to save, but keep the fresher merged copy locally.
+      setRrData(result.data);
+    }
     setRrParticipant(result.participant);
     setRrIsNew(result.isNew);
     setStage("welcome");

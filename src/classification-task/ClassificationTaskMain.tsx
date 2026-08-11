@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { TransitionsWriter } from "../utils/transitions";
 import VideoTaskMain from "../video-task/VideoTaskMain";
 import PartnerHistory from "./PartnerHistory";
@@ -63,6 +63,22 @@ function ClassificationTaskMain({
   const [formOrder, setFormOrder] = useState<string[]>([]);
   const [currentFormIndex, setCurrentFormIndex] = useState<number>(0);
 
+  // Ledger of rows already written. A failed write leaves the participant on
+  // the same page, and Continue re-runs the whole step below; transitions.csv
+  // is append-only, so rows that landed on the first attempt must be skipped
+  // on the retry, not appended a second time. Keys are namespaced by step, so
+  // the ledger never needs clearing; the step only advances once every one of
+  // its rows has been written. (A row that landed keeps its first-attempt
+  // value even if the answer was edited before the retry.)
+  const writtenRowsRef = useRef<Set<string>>(new Set());
+
+  /** Writes one row unless this key already made it to disk on a prior attempt. */
+  const writeRowOnce = async (key: string, ...row: Parameters<TransitionsWriter>) => {
+    if (writtenRowsRef.current.has(key)) return;
+    await writeCSVRow(...row);
+    writtenRowsRef.current.add(key);
+  };
+
   useEffect(() => {
     const blockRandomized = shuffle(["loneliness", "socialConnectedness", "expressivity"]);
     setFormOrder([
@@ -108,10 +124,10 @@ function ClassificationTaskMain({
     try {
       switch (currentStep) {
         case "partnerHistory":
-          await writeCSVRow("partner_history", "Have you met your partner prior to today's study?", "", "", "", stepData?.partnerHistory ? "Yes" : "No");
-          await writeCSVRow("partner_history", "How long have you known your partner? (in months)", "", "", "", String(stepData?.partnerHistoryMonths ?? ""));
-          await writeCSVRow("partner_history", "I am happy with my friendship with my partner", "", "", "", String((stepData?.matrixSelections as Record<number, number>)?.[0] ?? ""));
-          await writeCSVRow("partner_history", "My partner is fun to sit and talk with", "", "", "", String((stepData?.matrixSelections as Record<number, number>)?.[1] ?? ""));
+          await writeRowOnce("partnerHistory:met", "partner_history", "Have you met your partner prior to today's study?", "", "", "", stepData?.partnerHistory ? "Yes" : "No");
+          await writeRowOnce("partnerHistory:months", "partner_history", "How long have you known your partner? (in months)", "", "", "", String(stepData?.partnerHistoryMonths ?? ""));
+          await writeRowOnce("partnerHistory:happy", "partner_history", "I am happy with my friendship with my partner", "", "", "", String((stepData?.matrixSelections as Record<number, number>)?.[0] ?? ""));
+          await writeRowOnce("partnerHistory:fun", "partner_history", "My partner is fun to sit and talk with", "", "", "", String((stepData?.matrixSelections as Record<number, number>)?.[1] ?? ""));
           advanceForm();
           break;
 
@@ -120,7 +136,7 @@ function ClassificationTaskMain({
           const ratings = stepData?.ratings as Record<string, number> | undefined;
           if (order && ratings) {
             for (const emotion of order) {
-              await writeCSVRow("self_frequency", `How often do you feel ${emotion}?`, "", "", "", ratings[emotion] ?? "");
+              await writeRowOnce(`selfFrequency:${emotion}`, "self_frequency", `How often do you feel ${emotion}?`, "", "", "", ratings[emotion] ?? "");
             }
           }
           advanceForm();
@@ -132,7 +148,7 @@ function ClassificationTaskMain({
           const sel = stepData?.matrixSelections as Record<number, number> | undefined;
           if (order && sel) {
             for (const [index, question] of order.entries()) {
-              await writeCSVRow("loneliness", question, "", "", "", sel[index] ?? "");
+              await writeRowOnce(`loneliness:${index}`, "loneliness", question, "", "", "", sel[index] ?? "");
             }
           }
           advanceForm();
@@ -140,12 +156,12 @@ function ClassificationTaskMain({
         }
 
         case "demographics":
-          await writeCSVRow("demographics", "Enter your age:", "", "", "", String(stepData?.age ?? ""));
-          await writeCSVRow("demographics", "Are you Spanish, Hispanic, or Latino?", "", "", "", String(stepData?.hispanicLatino ?? ""));
-          await writeCSVRow("demographics", "Choose one or more races that you consider yourself to be:", "", "", "", (stepData?.races as string[] | undefined)?.join(";") ?? "");
-          await writeCSVRow("demographics", "Please specify (other race):", "", "", "", String(stepData?.otherRace ?? ""));
-          await writeCSVRow("demographics", "What is your sex?", "", "", "", String(stepData?.sex ?? ""));
-          await writeCSVRow("demographics", "Please provide the zip code of your permanent address (where you grew up):", "", "", "", String(stepData?.zipCode ?? ""));
+          await writeRowOnce("demographics:age", "demographics", "Enter your age:", "", "", "", String(stepData?.age ?? ""));
+          await writeRowOnce("demographics:hispanicLatino", "demographics", "Are you Spanish, Hispanic, or Latino?", "", "", "", String(stepData?.hispanicLatino ?? ""));
+          await writeRowOnce("demographics:races", "demographics", "Choose one or more races that you consider yourself to be:", "", "", "", (stepData?.races as string[] | undefined)?.join(";") ?? "");
+          await writeRowOnce("demographics:otherRace", "demographics", "Please specify (other race):", "", "", "", String(stepData?.otherRace ?? ""));
+          await writeRowOnce("demographics:sex", "demographics", "What is your sex?", "", "", "", String(stepData?.sex ?? ""));
+          await writeRowOnce("demographics:zipCode", "demographics", "Please provide the zip code of your permanent address (where you grew up):", "", "", "", String(stepData?.zipCode ?? ""));
           advanceForm();
           break;
 
@@ -154,7 +170,7 @@ function ClassificationTaskMain({
           const sliderSel = stepData?.sliderSelections as Record<number, number> | undefined;
           if (order && sliderSel) {
             for (const [index, question] of order.entries()) {
-              await writeCSVRow("partner_sliders", question, "", "", "", sliderSel[index] ?? "");
+              await writeRowOnce(`partnerSliders:${index}`, "partner_sliders", question, "", "", "", sliderSel[index] ?? "");
             }
           }
           advanceForm();
@@ -166,7 +182,7 @@ function ClassificationTaskMain({
           const sel = stepData?.matrixSelections as Record<number, number> | undefined;
           if (order && sel) {
             for (const [index, question] of order.entries()) {
-              await writeCSVRow("autism", question, "", "", "", sel[index] ?? "");
+              await writeRowOnce(`autism:${index}`, "autism", question, "", "", "", sel[index] ?? "");
             }
           }
           advanceForm();
@@ -174,9 +190,9 @@ function ClassificationTaskMain({
         }
 
         case "experience":
-          await writeCSVRow("experience", "How often were you thinking about the fact that your conversation was being video recorded?", "", "", "", String(stepData?.sync ?? ""));
-          await writeCSVRow("experience", "How comfortable did you feel during the conversation?", "", "", "", String(stepData?.wavelength ?? ""));
-          await writeCSVRow("experience", "We're interested in hearing more about your experience during your conversation. Please share any thoughts that you have below", "", "", "", String(stepData?.text ?? ""));
+          await writeRowOnce("experience:recorded", "experience", "How often were you thinking about the fact that your conversation was being video recorded?", "", "", "", String(stepData?.sync ?? ""));
+          await writeRowOnce("experience:comfortable", "experience", "How comfortable did you feel during the conversation?", "", "", "", String(stepData?.wavelength ?? ""));
+          await writeRowOnce("experience:text", "experience", "We're interested in hearing more about your experience during your conversation. Please share any thoughts that you have below", "", "", "", String(stepData?.text ?? ""));
           advanceForm();
           break;
 
@@ -185,7 +201,7 @@ function ClassificationTaskMain({
           const sel = stepData?.matrixSelections as Record<number, number> | undefined;
           if (order && sel) {
             for (const [index, question] of order.entries()) {
-              await writeCSVRow("social_connectedness", question, "", "", "", sel[index] ?? "");
+              await writeRowOnce(`socialConnectedness:${index}`, "social_connectedness", question, "", "", "", sel[index] ?? "");
             }
           }
           advanceForm();
@@ -197,7 +213,7 @@ function ClassificationTaskMain({
           const sel = stepData?.matrixSelections as Record<number, number> | undefined;
           if (order && sel) {
             for (const [index, question] of order.entries()) {
-              await writeCSVRow("expressivity", question, "", "", "", sel[index] ?? "");
+              await writeRowOnce(`expressivity:${index}`, "expressivity", question, "", "", "", sel[index] ?? "");
             }
           }
           advanceForm();
@@ -205,7 +221,7 @@ function ClassificationTaskMain({
         }
 
         case "studyFeedback":
-          await writeCSVRow("study_feedback", "We're interested in hearing more about your experience with our study. Please share any thoughts you have below.", "", "", "", String(stepData?.text ?? ""));
+          await writeRowOnce("studyFeedback:text", "study_feedback", "We're interested in hearing more about your experience with our study. Please share any thoughts you have below.", "", "", "", String(stepData?.text ?? ""));
           advanceForm();
           break;
 

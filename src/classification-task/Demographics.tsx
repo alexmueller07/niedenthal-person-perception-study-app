@@ -44,7 +44,6 @@ export default function Demographics({ onContinue }: ClassificationTaskProps) {
     <QuestionnairePage
       valid={isFormValid}
       onSubmit={() => onContinue?.({ age, hispanicLatino, races, otherRace, sex, zipCode })}
-      lockViewport
     >
       <div className="max-w-2xl mx-auto space-y-6">
         <div>

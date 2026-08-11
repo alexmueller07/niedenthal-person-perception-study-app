@@ -68,11 +68,14 @@ function ParticipantForm({ formData, onChange, onSubmit }: ParticipantFormProps)
     "w-full p-3 text-white bg-gray-800 border border-white rounded-lg focus:outline-none focus:border-blue-400";
   const errorClass = "text-red-400 text-xs mt-1 text-left";
 
+  // min-h-screen + scroll, not a locked viewport: on a short laptop this form
+  // ran past the window with no scroll path, hiding the bottom fields and the
+  // Start button (same clipping RatingOverlay had — see RatingOverlay.tsx).
   return (
-    <div className="w-full flex flex-col items-center justify-center bg-black cursor-auto overflow-hidden h-screen">
+    <div className="w-full flex flex-col items-center justify-center bg-black cursor-auto min-h-screen overflow-y-auto">
       <div className="text-center max-w-2xl mx-auto px-8">
         <h1 className="text-white text-4xl font-bold mb-8">
-          Please Enter the Particpant's Information
+          Please Enter the Participant's Information
         </h1>
 
         <div className="space-y-4">

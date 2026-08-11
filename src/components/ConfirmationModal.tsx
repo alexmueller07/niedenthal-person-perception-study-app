@@ -28,8 +28,10 @@ export default function ConfirmationModal({
 }: ConfirmationModalProps) {
   if (!isOpen) return null;
 
+  // bg-black/50, not bg-opacity-50: the bg-opacity-* utilities were removed in
+  // Tailwind v4, so the old class silently rendered the backdrop fully opaque.
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-gray-800 rounded-lg p-6 max-w-md mx-4">
         {title && (
           <h2 className="text-white text-xl font-bold mb-4">{title}</h2>

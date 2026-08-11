@@ -80,6 +80,29 @@ export async function saveData(data: RRData): Promise<string | null> {
   return null;
 }
 
+/**
+ * Merges two snapshots of the store, for the moment just before a save. Both
+ * lab check-in machines write the same file, and the copy loaded at app start
+ * goes stale the moment the other machine saves — writing it back would erase
+ * that machine's sign-ins (last-write-wins). Participants are united by email
+ * with the on-disk entry winning, so a group assignment made on the other
+ * machine is never re-rolled; meetings are united by pair key, disk winning
+ * on conflict for the same reason.
+ */
+export function mergeData(disk: RRData, memory: RRData): RRData {
+  const byEmail = new Map<string, RRParticipant>();
+  for (const p of disk.participants) byEmail.set(p.email, p);
+  for (const p of memory.participants) {
+    if (!byEmail.has(p.email)) byEmail.set(p.email, p);
+  }
+  return {
+    version: 1,
+    groupSize: disk.groupSize,
+    participants: [...byEmail.values()],
+    meetings: { ...memory.meetings, ...disk.meetings },
+  };
+}
+
 export function findParticipant(data: RRData, email: string): RRParticipant | undefined {
   const normalized = normalizeEmail(email);
   return data.participants.find((p) => p.email === normalized);

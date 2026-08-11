@@ -27,8 +27,10 @@ export default function SignIn({ onParticipant, onAdmin }: SignInProps) {
     }
   };
 
+  // min-h-screen + scroll, not a locked viewport, so nothing clips on short
+  // laptops (see RatingOverlay.tsx for the original fix).
   return (
-    <div className="w-full flex flex-col items-center justify-center bg-black cursor-auto overflow-hidden h-screen">
+    <div className="w-full flex flex-col items-center justify-center bg-black cursor-auto min-h-screen overflow-y-auto">
       <div className="text-center max-w-2xl mx-auto px-8">
         <h1 className="text-white text-4xl font-bold mb-8">Study Check-In</h1>
 

@@ -4,6 +4,13 @@ import { useState } from "react";
 // pps-psychology-tauri-app/src/components/MatrixSlider.tsx): text-lg row
 // labels on the left, the selected value shown in mono on the right only after
 // the row has been touched, space-y-6 rows with border-gray-600 dividers.
+//
+// Committing an answer: onChange alone could not record the default value —
+// releasing the handle exactly where it already sits (e.g. an intended 50 on a
+// 50-default scale) fires no change event, so that answer was unrecordable.
+// pointerup on the input now commits the current value even when it did not
+// move. The untouched handle is dimmed so a default-position handle that was
+// never committed is not mistaken for a response.
 interface MatrixSliderProps {
   rows: string[];
   onSelectionChange: (rowIndex: number, value: number) => void;
@@ -76,7 +83,17 @@ function MatrixSlider({
                 onChange={(e) =>
                   handleSliderChange(rowIndex, parseInt(e.target.value))
                 }
-                className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                // Releasing the handle commits the value even when it never
+                // moved — see the note at the top of this file. Pointer-only
+                // on purpose: a keyup commit would fire when a participant
+                // merely tabs onto the row, recording an answer they never
+                // gave (arrow-key changes already fire onChange).
+                onPointerUp={(e) =>
+                  handleSliderChange(rowIndex, parseInt(e.currentTarget.value))
+                }
+                className={`flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider ${
+                  interactedRows.has(rowIndex) ? "" : "slider-untouched"
+                }`}
                 style={{
                   background: interactedRows.has(rowIndex)
                     ? `linear-gradient(to right, #ffffff 0%, #ffffff ${

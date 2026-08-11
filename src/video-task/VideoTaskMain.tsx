@@ -201,10 +201,13 @@ export default function VideoTaskMain({
     onProgress?.(trialsDone, totalTrials + 1, detail);
   }, [phase, trialIndex, targetIndex, trialsDone, totalTrials, combined, people, set, onProgress]);
 
-  // Instruction screens advance on any key, matching the rest of the app.
+  // Instruction screens advance on any deliberate keypress, matching the rest
+  // of the app. Auto-repeat from a held key and lone modifiers are ignored —
+  // either could blow through several instruction screens at once.
   useEffect(() => {
     if (phase !== "instructions") return;
-    const onKeyDown = () => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || ["Shift", "Control", "Alt", "Meta"].includes(event.key)) return;
       if (instructionIndex + 1 >= instructions.length) setPhase("trials");
       else setInstructionIndex((i) => i + 1);
     };
@@ -329,7 +332,9 @@ export default function VideoTaskMain({
         <Instructions
           instructionIndex={instructionIndex}
           onBack={() => setInstructionIndex((i) => Math.max(0, i - 1))}
-          groupSize={4}
+          // Equal to the count so the screens build up on one page rather than
+          // splitting 4 + 2 (combined mode) or 4 + 3 (separate mode).
+          groupSize={instructions.length}
           instructions={instructions}
         />
       </div>

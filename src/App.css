@@ -55,3 +55,14 @@ input[type="range"].slider::-moz-range-thumb {
   cursor: pointer;
   border: none;
 }
+
+/* A row that has not been committed yet shows a dimmed handle, so a handle
+   resting at the default position is visibly "no answer yet" rather than a
+   recorded rating — see MatrixSlider.tsx. */
+input[type="range"].slider.slider-untouched::-webkit-slider-thumb {
+  background: #6b7280;
+}
+
+input[type="range"].slider.slider-untouched::-moz-range-thumb {
+  background: #6b7280;
+}

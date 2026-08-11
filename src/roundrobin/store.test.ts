@@ -5,6 +5,7 @@ import {
   groupNumbers,
   groupPairs,
   isValidEmail,
+  mergeData,
   normalizeEmail,
   pairKey,
   participantProgress,
@@ -62,6 +63,35 @@ describe("signIn / group assignment", () => {
     }
     expect(data.participants).toHaveLength(GROUP_SIZE * 2 + 1);
     expect(groupNumbers(data).length).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe("mergeData (two-machine sign-in)", () => {
+  it("unions participants from disk and memory instead of last-write-wins", () => {
+    // Machine A's stale in-memory copy vs. the file after machine B saved.
+    const memory = signIn(emptyData(), "a@x.com").data;
+    const disk = signIn(emptyData(), "b@x.com").data;
+    const merged = mergeData(disk, memory);
+    expect(merged.participants.map((p) => p.email).sort()).toEqual(["a@x.com", "b@x.com"]);
+  });
+
+  it("keeps the on-disk group assignment for an email present in both", () => {
+    const memory = signIn(emptyData(), "a@x.com").data;
+    const disk: RRData = {
+      ...emptyData(),
+      participants: [{ email: "a@x.com", group: 3, joinedAt: "2026-08-10T00:00:00Z" }],
+    };
+    const merged = mergeData(disk, memory);
+    expect(merged.participants).toHaveLength(1);
+    expect(merged.participants[0].group).toBe(3);
+  });
+
+  it("unions meetings, disk winning on conflict", () => {
+    let memory = signIn(signIn(emptyData(), "a@x.com").data, "b@x.com").data;
+    memory = toggleMeeting(memory, "a@x.com", "b@x.com");
+    const disk = emptyData();
+    const merged = mergeData(disk, memory);
+    expect(merged.meetings[pairKey("a@x.com", "b@x.com")]).toBeTruthy();
   });
 });
 
