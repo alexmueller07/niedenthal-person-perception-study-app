@@ -1,4 +1,5 @@
 import { useState } from "react";
+import RemoteSettingsPanel from "../remote/RemoteSettingsPanel";
 import type { AppSettings, VideoRatingMode } from "../utils/settings";
 
 // Everything the lab sets once per machine, on the dashboard rather than in the
@@ -116,6 +117,7 @@ function FolderRow({
 
 export default function FolderSettings({ settings, onChange }: FolderSettingsProps) {
   return (
+    <div className="space-y-6">
     <div className="bg-black border p-6 space-y-6">
       <h2 className="text-white text-xl font-bold">Folders on this machine</h2>
 
@@ -202,6 +204,9 @@ export default function FolderSettings({ settings, onChange }: FolderSettingsPro
           </p>
         </div>
       </div>
+    </div>
+
+    <RemoteSettingsPanel />
     </div>
   );
 }

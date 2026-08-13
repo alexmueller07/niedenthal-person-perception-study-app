@@ -23,3 +23,14 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-fs = "2"
 tauri-plugin-global-shortcut = "2"
+
+# Round Robin integration (src/remote.rs): looks up which conversation
+# recording belongs to the signed-in participant and reports study progress to
+# the live session board. Same choices as lab-recorder's roundrobin.rs —
+# rustls so the lab machines do not depend on a platform certificate store.
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+# Verifying that the conversation video copied off the Research Drive is
+# byte-for-byte the file the recorder wrote (the recorder published its
+# SHA-256 when it closed the take).
+sha2 = "0.10"

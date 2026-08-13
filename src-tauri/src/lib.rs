@@ -1,3 +1,5 @@
+mod remote;
+
 use tauri_plugin_fs::FsExt;
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -306,7 +308,13 @@ pub fn run() {
             load_settings,
             save_settings,
             load_progress,
-            save_progress
+            save_progress,
+            remote::remote_status,
+            remote::remote_configure,
+            remote::remote_test,
+            remote::list_conversation_clips,
+            remote::report_study_progress,
+            remote::prepare_conversation_video
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -15,8 +15,25 @@ import Welcome from "./roundrobin/Welcome";
 import AdminDashboard from "./roundrobin/AdminDashboard";
 import { emptyData, loadData, mergeData, saveData, signIn as rrSignIn } from "./roundrobin/store";
 import type { RRData, RRParticipant } from "./roundrobin/store";
-import { isHelpOpen, loadProgress, mergeProgress, saveProgress } from "./roundrobin/progress";
+import {
+  isHelpOpen,
+  loadProgress,
+  mergeProgress,
+  overallFraction,
+  saveProgress,
+  stageLabel,
+} from "./roundrobin/progress";
 import type { RRProgress, StageKey } from "./roundrobin/progress";
+import {
+  fetchableClips,
+  hasTauri,
+  listConversationClips,
+  newestClip,
+  prepareConversationVideo,
+  remoteStatus,
+  reportStudyProgress,
+} from "./remote/api";
+import type { CopyProgress, RemoteClip, RemotePublic } from "./remote/api";
 import { flushAll } from "./utils/flushRegistry";
 import { isBlockedShortcut } from "./utils/lockdown";
 import { invoke } from "@tauri-apps/api/core";
@@ -33,6 +50,32 @@ export interface FormData {
   sessionTime: string;
   sessionDate: string;
 }
+
+/**
+ * Where the automatic conversation-video fetch currently stands. Kicked off
+ * when the RA submits the participant form, so the ~1 GB copy off the
+ * Research Drive runs while the participant answers the post-conversation
+ * questionnaire — by the time the rating task wants the video, it is usually
+ * already local and checksum-verified.
+ *
+ * "choose" appears only when the participant has more than one recording
+ * (a multi-round session): which conversation gets rated is a protocol
+ * decision, so the RA picks rather than the app guessing. Every state leaves
+ * the manual file picker reachable — the pipeline must never block a session.
+ */
+export type ConversationPrep =
+  | { status: "idle" }
+  | { status: "finding" }
+  | { status: "choose"; clips: RemoteClip[]; recommended: RemoteClip }
+  | {
+      status: "copying";
+      clip: RemoteClip;
+      clips: RemoteClip[];
+      copiedBytes: number;
+      totalBytes: number;
+    }
+  | { status: "ready"; clip: RemoteClip; clips: RemoteClip[]; localPath: string }
+  | { status: "failed"; message: string; clips: RemoteClip[] };
 
 function App() {
   const [formData, setFormData] = useState<FormData>({
@@ -79,9 +122,23 @@ function App() {
   // help button has to disappear while that runs — see DyadTaskMain.
   const [cursorLocked, setCursorLocked] = useState<boolean>(false);
 
+  // The Round Robin server connection (URL + shared secret + drive mount),
+  // configured once per machine on the dashboard. Null until loaded; treated
+  // as "not configured" — everything remote is skipped — until it says
+  // otherwise.
+  const [remote, setRemote] = useState<RemotePublic | null>(null);
+  const [prep, setPrep] = useState<ConversationPrep>({ status: "idle" });
+
   useEffect(() => {
     void loadData().then(setRrData);
+    if (hasTauri()) {
+      void remoteStatus()
+        .then(setRemote)
+        .catch(() => setRemote(null));
+    }
   }, []);
+
+  const remoteReady = Boolean(remote?.roundRobinUrl && remote?.secretConfigured);
 
   const persistRr = (data: RRData) => {
     setRrData(data);
@@ -91,13 +148,31 @@ function App() {
     });
   };
 
-  const writeProgress = useCallback((email: string, patch: Partial<RRProgress>) => {
-    const next = mergeProgress(progressRef.current ?? undefined, email, patch);
-    progressRef.current = next;
-    // Progress tracking is a convenience for the researcher, never study data:
-    // a failed write is logged and dropped rather than interrupting a session.
-    void saveProgress(next).catch((err) => console.error("Progress save failed:", err));
-  }, []);
+  const writeProgress = useCallback(
+    (email: string, patch: Partial<RRProgress>) => {
+      const next = mergeProgress(progressRef.current ?? undefined, email, patch);
+      progressRef.current = next;
+      // Progress tracking is a convenience for the researcher, never study data:
+      // a failed write is logged and dropped rather than interrupting a session.
+      void saveProgress(next).catch((err) => console.error("Progress save failed:", err));
+
+      // Mirror the same update to the Round Robin session board, so the RAs
+      // running the session watch every rating station live without walking
+      // over. Same convenience-not-data rule: failures are logged and dropped.
+      if (hasTauri() && remoteReady) {
+        const stageText = next.detail
+          ? `${stageLabel(next.stage)} — ${next.detail}`
+          : stageLabel(next.stage);
+        void reportStudyProgress(
+          email,
+          stageText,
+          Math.round(overallFraction(next) * 100),
+          isHelpOpen(next)
+        ).catch((err) => console.error("Round Robin progress report failed:", err));
+      }
+    },
+    [remoteReady]
+  );
 
   const reportProgress = useCallback(
     (stage: StageKey, done: number, total: number, detail: string) => {
@@ -230,6 +305,83 @@ function App() {
     }
   };
 
+  // ---- automatic conversation-video fetch ---------------------------------
+
+  // Progress events from the Rust copy loop. One global listener; events for a
+  // recording that is no longer the one being prepared are dropped.
+  useEffect(() => {
+    if (!hasTauri()) return;
+    let unlisten: (() => void) | null = null;
+    void listen<CopyProgress>("conversation-copy-progress", (event) => {
+      setPrep((current) =>
+        current.status === "copying" &&
+        current.clip.recordingId === event.payload.recordingId
+          ? {
+              ...current,
+              copiedBytes: event.payload.copiedBytes,
+              totalBytes: event.payload.totalBytes,
+            }
+          : current
+      );
+    }).then((un) => {
+      unlisten = un;
+    });
+    return () => unlisten?.();
+  }, []);
+
+  const prepareClip = useCallback((clip: RemoteClip, clips: RemoteClip[]) => {
+    if (!clip.storageKey) {
+      setPrep({
+        status: "failed",
+        message:
+          "Round Robin did not include a storage key for this recording — it may predate the native recorder.",
+        clips,
+      });
+      return;
+    }
+    setPrep({ status: "copying", clip, clips, copiedBytes: 0, totalBytes: 0 });
+    void prepareConversationVideo(clip.recordingId, clip.storageKey, clip.sha256 ?? null)
+      .then((prepared) =>
+        setPrep({ status: "ready", clip, clips, localPath: prepared.localPath })
+      )
+      .catch((err) =>
+        setPrep({ status: "failed", message: String(err), clips })
+      );
+  }, []);
+
+  /**
+   * Finds this participant's conversation recording through Round Robin and
+   * starts fetching it. Fire-and-forget from the form submit: the participant
+   * moves on to the questionnaire either way, and the dyad task falls back to
+   * the manual picker if this never succeeds.
+   */
+  const startConversationSearch = useCallback(() => {
+    const email = rrParticipant?.email;
+    if (!hasTauri() || !remoteReady || !email) return;
+    setPrep({ status: "finding" });
+    void listConversationClips(email)
+      .then((response) => {
+        const clips = fetchableClips(response.clips);
+        const recommended = newestClip(clips);
+        if (!recommended) {
+          setPrep({
+            status: "failed",
+            message: `Round Robin has no stored recording for ${email}. If the conversation just ended, the recorder may still be filing it.`,
+            clips: [],
+          });
+          return;
+        }
+        if (clips.length === 1) {
+          prepareClip(recommended, clips);
+        } else {
+          // More than one conversation on file — which one gets rated is a
+          // protocol decision, so the RA picks. The newest is preselected.
+          setPrep({ status: "choose", clips, recommended });
+        }
+      })
+      .catch((err) => setPrep({ status: "failed", message: String(err), clips: [] }));
+  }, [rrParticipant, remoteReady, prepareClip]);
+
   const handleFormSubmit = async () => {
     try {
       const basePath = await invoke<string>("setup_rating_directory", {
@@ -239,6 +391,10 @@ function App() {
         partnerId: formData.partnerId,
         initials: formData.subjectInitials,
       });
+
+      // Start pulling the conversation video now, so the copy runs while the
+      // participant answers the post-conversation questionnaire.
+      startConversationSearch();
 
       setDyadCsvFilePath(`${basePath}/ratings.csv`);
       transitionsWriterRef.current = createTransitionsWriter(
@@ -364,6 +520,15 @@ function App() {
           formData={formData}
           csvFilePath={dyadCsvFilePath}
           taskOrder={taskOrder}
+          conversation={{
+            prep,
+            onUseClip: (clip) =>
+              prepareClip(
+                clip,
+                prep.status === "idle" || prep.status === "finding" ? [clip] : prep.clips
+              ),
+            onRetry: startConversationSearch,
+          }}
           onComplete={handleDyadTaskComplete}
           onCsvError={handleCsvError}
           onProgress={(done, total, detail) => reportProgress("dyad", done, total, detail)}

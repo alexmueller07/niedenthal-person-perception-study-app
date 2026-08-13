@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import type { FormData } from "../App";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import type { ConversationPrep, FormData } from "../App";
+import { describeClip } from "../remote/api";
+import type { RemoteClip } from "../remote/api";
 import { csvEscape } from "../utils/csv";
 import { registerFlush } from "../utils/flushRegistry";
 
@@ -29,6 +31,17 @@ interface DyadTaskMainProps {
   formData: FormData;
   csvFilePath: string;
   taskOrder: number;
+  /**
+   * The automatic conversation-video fetch, driven from App. When it lands in
+   * "ready" the video is loaded without anyone touching a file picker; every
+   * other state renders around the manual picker so the pipeline can never
+   * block a session.
+   */
+  conversation?: {
+    prep: ConversationPrep;
+    onUseClip: (clip: RemoteClip) => void;
+    onRetry: () => void;
+  };
   onComplete?: () => void;
   onCsvError?: (msg: string) => void;
   /** Reports block progress for the researcher dashboard. */
@@ -46,6 +59,7 @@ function DyadTaskMain({
   formData,
   csvFilePath,
   taskOrder,
+  conversation,
   onComplete,
   onCsvError,
   onProgress,
@@ -186,6 +200,25 @@ function DyadTaskMain({
       alert("Please select a valid MP4 or MOV video file.");
     }
   };
+
+  // When the RA prefers the manual picker even though the automatic fetch is
+  // available (or still running). Session-local; never persisted.
+  const [manualMode, setManualMode] = useState(false);
+
+  // The automatic path into the task: the fetched, checksum-verified local
+  // copy loads exactly the way a hand-picked file would — same seat rule for
+  // the first perspective, same <video> element, same everything after this
+  // point. The pipeline changes how the file arrives, not how it plays.
+  const consumedPathRef = useRef<string | null>(null);
+  const prep = conversation?.prep;
+  useEffect(() => {
+    if (!prep || prep.status !== "ready" || !showVideoInput || manualMode) return;
+    if (consumedPathRef.current === prep.localPath) return;
+    consumedPathRef.current = prep.localPath;
+    setVideoSrc(convertFileSrc(prep.localPath));
+    setShowVideoInput(false);
+    setCurrentRatingTarget(formData.computer === "Left" ? "self" : "partner");
+  }, [prep, showVideoInput, manualMode, formData.computer]);
 
   // The object URL keeps the whole conversation recording mapped for the life
   // of the URL, not the life of the element — release it when the source
@@ -501,13 +534,121 @@ function DyadTaskMain({
       {showVideoInput ? (
         <div className="h-full w-full flex items-center justify-center bg-black">
           <div className="bg-black border p-8 max-w-2xl mx-auto">
-            <h1 className="text-white text-2xl mb-8">Select Video File</h1>
-            <input
-              type="file"
-              accept=".mp4,.mov"
-              onChange={handleFileChange}
-              className="px-4 py-2 border rounded-2xl border-white bg-black text-white cursor-pointer hover:bg-gray-800"
-            />
+            {!manualMode && prep && prep.status === "finding" ? (
+              <>
+                <h1 className="text-white text-2xl mb-4">Finding the conversation video…</h1>
+                <p className="text-gray-400 mb-8">
+                  Asking Round Robin which recording belongs to this participant.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setManualMode(true)}
+                  className="text-gray-400 underline hover:text-white"
+                >
+                  Choose a file manually instead
+                </button>
+              </>
+            ) : !manualMode && prep && prep.status === "copying" ? (
+              <>
+                <h1 className="text-white text-2xl mb-4">Preparing the conversation video…</h1>
+                <p className="text-gray-400 mb-2">{describeClip(prep.clip)}</p>
+                <p className="text-gray-400 mb-4">
+                  Copying from the Research Drive and verifying the recorder&rsquo;s
+                  checksum. This can take a minute for a full conversation.
+                </p>
+                <div className="w-full h-3 border border-white mb-2">
+                  <div
+                    className="h-full bg-white transition-all"
+                    style={{
+                      width:
+                        prep.totalBytes > 0
+                          ? `${Math.min(100, (prep.copiedBytes / prep.totalBytes) * 100).toFixed(1)}%`
+                          : "5%",
+                    }}
+                  />
+                </div>
+                <p className="text-gray-400 text-sm mb-8">
+                  {prep.totalBytes > 0
+                    ? `${Math.round(prep.copiedBytes / 1048576)} MB of ${Math.round(prep.totalBytes / 1048576)} MB`
+                    : "Starting…"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setManualMode(true)}
+                  className="text-gray-400 underline hover:text-white"
+                >
+                  Choose a file manually instead
+                </button>
+              </>
+            ) : !manualMode && prep && prep.status === "choose" ? (
+              <>
+                <h1 className="text-white text-2xl mb-4">
+                  Which conversation should be rated?
+                </h1>
+                <p className="text-gray-400 mb-6">
+                  This participant has {prep.clips.length} recordings on file. The most
+                  recent is first.
+                </p>
+                <div className="space-y-3 mb-8">
+                  {[
+                    prep.recommended,
+                    ...prep.clips.filter(
+                      (c) => c.recordingId !== prep.recommended.recordingId
+                    ),
+                  ].map((clip) => (
+                    <button
+                      key={clip.recordingId}
+                      type="button"
+                      onClick={() => conversation?.onUseClip(clip)}
+                      className={`block w-full border p-4 text-left text-white hover:bg-gray-800 ${
+                        clip.recordingId === prep.recommended.recordingId
+                          ? "border-white"
+                          : "border-gray-600"
+                      }`}
+                    >
+                      {describeClip(clip)}
+                      {clip.recordingId === prep.recommended.recordingId && (
+                        <span className="ml-2 text-gray-400 text-sm">(most recent)</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setManualMode(true)}
+                  className="text-gray-400 underline hover:text-white"
+                >
+                  Choose a file manually instead
+                </button>
+              </>
+            ) : !manualMode && prep && prep.status === "ready" ? (
+              <h1 className="text-white text-2xl">Loading the conversation video…</h1>
+            ) : (
+              <>
+                {!manualMode && prep && prep.status === "failed" && (
+                  <div className="mb-6 border border-red-400 bg-red-900/40 p-4">
+                    <p className="text-white mb-3">
+                      The conversation video could not be fetched automatically.
+                    </p>
+                    <p className="text-red-200 text-sm mb-3">{prep.message}</p>
+                    <button
+                      type="button"
+                      onClick={() => conversation?.onRetry()}
+                      className="px-4 py-2 border border-white text-white hover:bg-gray-800"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+                <h1 className="text-white text-2xl mb-8">Select Video File</h1>
+                <input
+                  type="file"
+                  accept=".mp4,.mov"
+                  onChange={handleFileChange}
+                  className="px-4 py-2 border rounded-2xl border-white bg-black text-white cursor-pointer hover:bg-gray-800"
+                />
+              </>
+            )}
           </div>
         </div>
       ) : videoSrc && !instructionsDone ? (
