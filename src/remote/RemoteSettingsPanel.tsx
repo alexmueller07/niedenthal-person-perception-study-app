@@ -100,7 +100,7 @@ export default function RemoteSettingsPanel() {
           type="text"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://round-robin.example.edu"
+          placeholder="https://sc.psych.wisc.edu"
           className="w-full p-3 text-white bg-gray-800 border border-white rounded-lg focus:outline-none focus:border-blue-400"
         />
       </div>

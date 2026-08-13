@@ -25,6 +25,7 @@ import {
 } from "./roundrobin/progress";
 import type { RRProgress, StageKey } from "./roundrobin/progress";
 import {
+  describeClip,
   fetchableClips,
   hasTauri,
   listConversationClips,
@@ -329,25 +330,49 @@ function App() {
     return () => unlisten?.();
   }, []);
 
-  const prepareClip = useCallback((clip: RemoteClip, clips: RemoteClip[]) => {
-    if (!clip.storageKey) {
-      setPrep({
-        status: "failed",
-        message:
-          "Round Robin did not include a storage key for this recording — it may predate the native recorder.",
-        clips,
-      });
-      return;
-    }
-    setPrep({ status: "copying", clip, clips, copiedBytes: 0, totalBytes: 0 });
-    void prepareConversationVideo(clip.recordingId, clip.storageKey, clip.sha256 ?? null)
-      .then((prepared) =>
-        setPrep({ status: "ready", clip, clips, localPath: prepared.localPath })
-      )
-      .catch((err) =>
-        setPrep({ status: "failed", message: String(err), clips })
+  // By the time the video fetch resolves, the RA has usually left this station
+  // — the participant is mid-questionnaire. Mirroring the outcome to the Round
+  // Robin board (with the help flag on failure) is what lets the RA notice a
+  // problem from the control page instead of discovering it over the
+  // participant's shoulder ten minutes later.
+  const reportStationEvent = useCallback(
+    (text: string, needsHelp: boolean) => {
+      const email = rrParticipant?.email;
+      if (!email || !hasTauri() || !remoteReady) return;
+      void reportStudyProgress(email, text, null, needsHelp).catch((err) =>
+        console.error("Round Robin station event failed:", err)
       );
-  }, []);
+    },
+    [rrParticipant, remoteReady]
+  );
+
+  const prepareClip = useCallback(
+    (clip: RemoteClip, clips: RemoteClip[]) => {
+      if (!clip.storageKey) {
+        setPrep({
+          status: "failed",
+          message:
+            "Round Robin did not include a storage key for this recording — it may predate the native recorder.",
+          clips,
+        });
+        return;
+      }
+      setPrep({ status: "copying", clip, clips, copiedBytes: 0, totalBytes: 0 });
+      void prepareConversationVideo(clip.recordingId, clip.storageKey, clip.sha256 ?? null)
+        .then((prepared) => {
+          setPrep({ status: "ready", clip, clips, localPath: prepared.localPath });
+          reportStationEvent(
+            `Conversation video ready — ${describeClip(clip)}`,
+            false
+          );
+        })
+        .catch((err) => {
+          setPrep({ status: "failed", message: String(err), clips });
+          reportStationEvent("Conversation video fetch FAILED — check station", true);
+        });
+    },
+    [reportStationEvent]
+  );
 
   /**
    * Finds this participant's conversation recording through Round Robin and
@@ -369,6 +394,7 @@ function App() {
             message: `Round Robin has no stored recording for ${email}. If the conversation just ended, the recorder may still be filing it.`,
             clips: [],
           });
+          reportStationEvent("No conversation recording on file — check station", true);
           return;
         }
         if (clips.length === 1) {
@@ -379,8 +405,11 @@ function App() {
           setPrep({ status: "choose", clips, recommended });
         }
       })
-      .catch((err) => setPrep({ status: "failed", message: String(err), clips: [] }));
-  }, [rrParticipant, remoteReady, prepareClip]);
+      .catch((err) => {
+        setPrep({ status: "failed", message: String(err), clips: [] });
+        reportStationEvent("Conversation video lookup FAILED — check station", true);
+      });
+  }, [rrParticipant, remoteReady, prepareClip, reportStationEvent]);
 
   const handleFormSubmit = async () => {
     try {
